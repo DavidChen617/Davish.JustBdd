@@ -27,9 +27,19 @@ public sealed class Scenario(
 
     private readonly ScenarioContext _ctx = new(description, filePath, lineNumber);
 
+    private Scenario(ScenarioContext ctx) : this(ctx.Description, ctx.FilePath, ctx.LineNumber) => _ctx = ctx;
+
     public string Description => _ctx.Description;
     public string FilePath => _ctx.FilePath;
     public int LineNumber => _ctx.LineNumber;
+
+    /// <summary>
+    /// Returns a scenario that keeps running the consecutive Then, And, and Assert steps of a segment after one fails.
+    /// Given, When, and state-producing steps such as ThenThrows still stop the scenario, as does the end of a segment.
+    /// One failure throws the original exception; several throw <see cref="ScenarioFailuresException"/>.
+    /// The option does not apply to nested scenarios.
+    /// </summary>
+    public Scenario ContinueOnFailure() => new(_ctx with { ContinueOnFailure = true });
 
     // ---- Given
 

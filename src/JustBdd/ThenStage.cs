@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using System.Runtime.ExceptionServices;
 
 namespace Davish.JustBdd;
 
@@ -124,17 +125,39 @@ public sealed class ThenStage<T>
     internal WhenStage<T, TOut> WhenCore<TOut>(string? desc, string code, Func<T, ValueTask<TOut>> fn)
     {
         var step = new StepInfo(StepKind.When, desc, code);
-        var (run, thens) = (_run, _thens);
+        var (ctx, run, thens) = (_ctx, _run, _thens);
 
         async ValueTask<T> Prev(Recorder rec)
         {
             var state = await run(rec);
-            foreach (var then in thens)
-                await then(rec, state);
+            await RunChecks(ctx, thens, rec, state);
             return state;
         }
 
         return new(_ctx, [.. _steps, step], step, Prev, fn);
+    }
+
+    // Runs a segment's consecutive checks. With ContinueOnFailure every check runs; one failure is rethrown unchanged,
+    // several are combined. Each failed step has already been recorded with its own step path.
+    private static async ValueTask RunChecks(ScenarioContext ctx, Func<Recorder, T, ValueTask>[] thens, Recorder rec, T state)
+    {
+        if (!ctx.ContinueOnFailure)
+        {
+            foreach (var then in thens)
+                await then(rec, state);
+            return;
+        }
+
+        List<Exception>? failures = null;
+        foreach (var then in thens)
+        {
+            try { await then(rec, state); }
+            catch (Exception ex) { (failures ??= []).Add(ex); }
+        }
+
+        if (failures is null) return;
+        if (failures.Count == 1) ExceptionDispatchInfo.Capture(failures[0]).Throw();
+        throw new ScenarioFailuresException(ctx.Description, failures);
     }
 
     // Copy the array to keep branched chains independent and immutable.
@@ -179,8 +202,7 @@ public sealed class ThenStage<T>
         try
         {
             var state = await _run(rec);
-            foreach (var then in _thens)
-                await then(rec, state);
+            await RunChecks(_ctx, _thens, rec, state);
             return result = rec.ToResult(_ctx, _steps);
         }
         catch (Exception ex) when (Fault(ex)) { throw; }

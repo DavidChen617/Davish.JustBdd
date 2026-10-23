@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 namespace Davish.JustBdd;
@@ -84,5 +85,117 @@ public sealed class WhenStage<TIn, TOut>
         }
 
         return new(_ctx, [.. _steps, step], Run, []);
+    }
+
+    // ---- ThenRaises: subscribe to the When input while When runs
+    // attach/detach receive the When input; the object must exist before When. A When exception fails as usual.
+
+    public ThenStage<Raised<TIn, TArgs>> ThenRaises<TArgs>(string desc, Action<TIn, EventHandler<TArgs>> attach, Action<TIn, EventHandler<TArgs>> detach, [CallerArgumentExpression(nameof(attach))] string code = "")
+        => RaisesCore(desc, $"ThenRaises<{typeof(TArgs).Name}>({code})", Handler(attach, detach), typeof(TArgs).Name);
+    public ThenStage<Raised<TIn, TArgs>> ThenRaises<TArgs>(Action<TIn, EventHandler<TArgs>> attach, Action<TIn, EventHandler<TArgs>> detach, [CallerArgumentExpression(nameof(attach))] string code = "")
+        => RaisesCore(null, $"ThenRaises<{typeof(TArgs).Name}>({code})", Handler(attach, detach), typeof(TArgs).Name);
+    public ThenStage<Raised<TIn, EventArgs>> ThenRaises(string desc, Action<TIn, EventHandler> attach, Action<TIn, EventHandler> detach, [CallerArgumentExpression(nameof(attach))] string code = "")
+        => RaisesCore(desc, $"ThenRaises({code})", Handler(attach, detach), nameof(EventArgs));
+    public ThenStage<Raised<TIn, EventArgs>> ThenRaises(Action<TIn, EventHandler> attach, Action<TIn, EventHandler> detach, [CallerArgumentExpression(nameof(attach))] string code = "")
+        => RaisesCore(null, $"ThenRaises({code})", Handler(attach, detach), nameof(EventArgs));
+    public ThenStage<Raised<TIn, TArgs>> ThenRaises<THandler, TArgs>(string desc, Func<Action<object?, TArgs>, THandler> handler, Action<TIn, THandler> attach, Action<TIn, THandler> detach, [CallerArgumentExpression(nameof(attach))] string code = "") where THandler : Delegate
+        => RaisesCore(desc, $"ThenRaises<{typeof(THandler).Name}>({code})", Handler(handler, attach, detach), typeof(THandler).Name);
+    public ThenStage<Raised<TIn, TArgs>> ThenRaises<THandler, TArgs>(Func<Action<object?, TArgs>, THandler> handler, Action<TIn, THandler> attach, Action<TIn, THandler> detach, [CallerArgumentExpression(nameof(attach))] string code = "") where THandler : Delegate
+        => RaisesCore(null, $"ThenRaises<{typeof(THandler).Name}>({code})", Handler(handler, attach, detach), typeof(THandler).Name);
+    public ThenStage<Raised<TIn, PropertyChangedEventArgs>> ThenPropertyChanged(string desc, Func<TIn, INotifyPropertyChanged> source, string propertyName, [CallerArgumentExpression(nameof(source))] string code = "")
+        => RaisesCore(desc, $"ThenPropertyChanged({code}, \"{propertyName}\")", PropertyHandler(source, propertyName), $"PropertyChanged for '{propertyName}'");
+    public ThenStage<Raised<TIn, PropertyChangedEventArgs>> ThenPropertyChanged(Func<TIn, INotifyPropertyChanged> source, string propertyName, [CallerArgumentExpression(nameof(source))] string code = "")
+        => RaisesCore(null, $"ThenPropertyChanged({code}, \"{propertyName}\")", PropertyHandler(source, propertyName), $"PropertyChanged for '{propertyName}'");
+
+    // ---- ThenNotRaises: When must not raise the event; the state stays the When result
+
+    public ThenStage<TOut> ThenNotRaises<TArgs>(string desc, Action<TIn, EventHandler<TArgs>> attach, Action<TIn, EventHandler<TArgs>> detach, [CallerArgumentExpression(nameof(attach))] string code = "")
+        => NotRaisesCore(desc, $"ThenNotRaises<{typeof(TArgs).Name}>({code})", Handler(attach, detach), typeof(TArgs).Name);
+    public ThenStage<TOut> ThenNotRaises<TArgs>(Action<TIn, EventHandler<TArgs>> attach, Action<TIn, EventHandler<TArgs>> detach, [CallerArgumentExpression(nameof(attach))] string code = "")
+        => NotRaisesCore(null, $"ThenNotRaises<{typeof(TArgs).Name}>({code})", Handler(attach, detach), typeof(TArgs).Name);
+    public ThenStage<TOut> ThenNotRaises(string desc, Action<TIn, EventHandler> attach, Action<TIn, EventHandler> detach, [CallerArgumentExpression(nameof(attach))] string code = "")
+        => NotRaisesCore(desc, $"ThenNotRaises({code})", Handler(attach, detach), nameof(EventArgs));
+    public ThenStage<TOut> ThenNotRaises(Action<TIn, EventHandler> attach, Action<TIn, EventHandler> detach, [CallerArgumentExpression(nameof(attach))] string code = "")
+        => NotRaisesCore(null, $"ThenNotRaises({code})", Handler(attach, detach), nameof(EventArgs));
+    public ThenStage<TOut> ThenNotRaises<THandler, TArgs>(string desc, Func<Action<object?, TArgs>, THandler> handler, Action<TIn, THandler> attach, Action<TIn, THandler> detach, [CallerArgumentExpression(nameof(attach))] string code = "") where THandler : Delegate
+        => NotRaisesCore(desc, $"ThenNotRaises<{typeof(THandler).Name}>({code})", Handler(handler, attach, detach), typeof(THandler).Name);
+    public ThenStage<TOut> ThenNotRaises<THandler, TArgs>(Func<Action<object?, TArgs>, THandler> handler, Action<TIn, THandler> attach, Action<TIn, THandler> detach, [CallerArgumentExpression(nameof(attach))] string code = "") where THandler : Delegate
+        => NotRaisesCore(null, $"ThenNotRaises<{typeof(THandler).Name}>({code})", Handler(handler, attach, detach), typeof(THandler).Name);
+    public ThenStage<TOut> ThenPropertyNotChanged(string desc, Func<TIn, INotifyPropertyChanged> source, string propertyName, [CallerArgumentExpression(nameof(source))] string code = "")
+        => NotRaisesCore(desc, $"ThenPropertyNotChanged({code}, \"{propertyName}\")", PropertyHandler(source, propertyName), $"PropertyChanged for '{propertyName}'");
+    public ThenStage<TOut> ThenPropertyNotChanged(Func<TIn, INotifyPropertyChanged> source, string propertyName, [CallerArgumentExpression(nameof(source))] string code = "")
+        => NotRaisesCore(null, $"ThenPropertyNotChanged({code}, \"{propertyName}\")", PropertyHandler(source, propertyName), $"PropertyChanged for '{propertyName}'");
+
+    // Subscribes a recorder to the input and returns the unsubscribe action.
+    private delegate Action Subscription<TArgs>(TIn input, Action<object?, TArgs> record);
+
+    private static Subscription<TArgs> Handler<TArgs>(Action<TIn, EventHandler<TArgs>> attach, Action<TIn, EventHandler<TArgs>> detach)
+        => (input, record) => { EventHandler<TArgs> h = (s, e) => record(s, e); attach(input, h); return () => detach(input, h); };
+
+    private static Subscription<EventArgs> Handler(Action<TIn, EventHandler> attach, Action<TIn, EventHandler> detach)
+        => (input, record) => { EventHandler h = (s, e) => record(s, e); attach(input, h); return () => detach(input, h); };
+
+    private static Subscription<TArgs> Handler<THandler, TArgs>(Func<Action<object?, TArgs>, THandler> handler,
+        Action<TIn, THandler> attach, Action<TIn, THandler> detach)
+        => (input, record) => { var h = handler(record); attach(input, h); return () => detach(input, h); };
+
+    private static Subscription<PropertyChangedEventArgs> PropertyHandler(Func<TIn, INotifyPropertyChanged> source, string propertyName)
+        => (input, record) =>
+        {
+            var target = source(input);
+            PropertyChangedEventHandler h = (s, e) => { if (e.PropertyName == propertyName) record(s, e); };
+            target.PropertyChanged += h;
+            return () => target.PropertyChanged -= h;
+        };
+
+    private ThenStage<Raised<TIn, TArgs>> RaisesCore<TArgs>(string? desc, string code, Subscription<TArgs> subscribe, string eventName)
+    {
+        var (ctx, when) = (_ctx, _when);
+        var step = new StepInfo(StepKind.Then, desc, code);
+
+        async ValueTask<Raised<TIn, TArgs>> Run(Recorder rec)
+        {
+            var (input, _, events) = await Observe(rec, subscribe);
+            await Steps.Run(rec, ctx, step, () => events.Count == 0
+                ? throw new ScenarioExpectationException(
+                    $"Expected When '{when.Description ?? when.Code}' to raise {eventName}, but no event was raised.")
+                : default(ValueTask));
+            return new Raised<TIn, TArgs>(input, events);
+        }
+
+        return new(_ctx, [.. _steps, step], Run, []);
+    }
+
+    private ThenStage<TOut> NotRaisesCore<TArgs>(string? desc, string code, Subscription<TArgs> subscribe, string eventName)
+    {
+        var (ctx, when) = (_ctx, _when);
+        var step = new StepInfo(StepKind.Then, desc, code);
+
+        async ValueTask<TOut> Run(Recorder rec)
+        {
+            var (_, result, events) = await Observe(rec, subscribe);
+            await Steps.Run(rec, ctx, step, () => events.Count > 0
+                ? throw new ScenarioExpectationException(
+                    $"Expected When '{when.Description ?? when.Code}' not to raise {eventName}, but it was raised {events.Count} time(s).")
+                : default(ValueTask));
+            return result;
+        }
+
+        return new(_ctx, [.. _steps, step], Run, []);
+    }
+
+    // Runs When as its own step with the subscription active, detaching even when When fails.
+    private async ValueTask<(TIn Input, TOut Result, IReadOnlyList<RaisedEvent<TArgs>> Events)> Observe<TArgs>(Recorder rec, Subscription<TArgs> subscribe)
+    {
+        var input = await _prev(rec);
+        var events = new List<RaisedEvent<TArgs>>();
+        var result = await Steps.Run(rec, _ctx, _when, async () =>
+        {
+            // Events may arrive on other threads.
+            var unsubscribe = subscribe(input, (sender, args) => { lock (events) events.Add(new RaisedEvent<TArgs>(sender, args)); });
+            try { return await _fn(input); }
+            finally { unsubscribe(); }
+        });
+        lock (events) return (input, result, events.ToArray());
     }
 }

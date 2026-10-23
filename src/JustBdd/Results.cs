@@ -25,7 +25,11 @@ public sealed record ScenarioResult(string Description, string FilePath, int Lin
     public bool Passed => Steps.All(s => s.Status is StepStatus.Passed or StepStatus.ThrewAsExpected);
 }
 
-internal sealed record ScenarioContext(string Description, string FilePath, int LineNumber);
+internal sealed record ScenarioContext(string Description, string FilePath, int LineNumber)
+{
+    /// <summary>Keep running the consecutive checks of a segment after one fails.</summary>
+    public bool ContinueOnFailure { get; init; }
+}
 
 /// <summary>Records one execution. Each RunAsync owns an independent recorder.</summary>
 internal sealed class Recorder
