@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/JustBdd/JustBdd.csproj" />
+    <Project Path="src/JustBdd.Xunit/JustBdd.Xunit.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/JustBdd.Tests/JustBdd.Tests.csproj" />
+    <Project Path="tests/JustBdd.Xunit.Tests/JustBdd.Xunit.Tests.csproj" />
+  </Folder>
+  <Folder Name="/samples/">
+    <Project Path="samples/ShoppingCart.Domain/ShoppingCart.Domain.csproj" />
+    <Project Path="samples/ShoppingCart.Domain.Tests/ShoppingCart.Domain.Tests.csproj" />
+  </Folder>
+</Solution>

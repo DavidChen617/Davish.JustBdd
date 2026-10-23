@@ -1,0 +1,9 @@
+<Project>
+  <ItemGroup>
+    <!-- MTP calls AddExtensions(builder, args) on TypeFullName. Keep the hook GUID stable. -->
+    <TestingPlatformBuilderHook Include="5B1E2C7A-3D4F-4E8A-9C61-7A2B0D9E4F13">
+      <DisplayName>Davish.JustBdd.XunitV3</DisplayName>
+      <TypeFullName>Davish.JustBdd.TestingPlatformBuilderHook</TypeFullName>
+    </TestingPlatformBuilderHook>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+    <AssemblyName>Davish.JustBdd.XunitV3.Tests</AssemblyName>
+    <RootNamespace>Davish.JustBdd.Tests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+    <Using Include="Xunit" />
+    <Using Include="Xunit.Sdk" />
+    <Using Include="Davish.JustBdd" />
+    <PackageReference Include="xunit.v3.mtp-v2" Version="4.0.1" />
+    <ProjectReference Include="../../src/JustBdd.Xunit/JustBdd.Xunit.csproj" />
+  </ItemGroup>
+
+</Project>

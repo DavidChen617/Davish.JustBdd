@@ -1,0 +1,36 @@
+/* Davish.JustBdd: begin ------------------------------------------------------- */
+.badge.bdd { color: var(--accent); border-color: var(--accent); }
+.test-row .name .bdd-names { display: block; font-size: 13px; overflow: hidden; text-overflow: ellipsis; }
+.bdd-location { font-size: 12px; color: var(--fg-muted); font-family: var(--mono); }
+.bdd-scenario { border: 1px solid var(--border); border-radius: 6px; margin: 0 0 12px; background: var(--bg-card); }
+.bdd-scenario > summary { display: flex; gap: 8px; align-items: center; padding: 6px 10px; background: var(--bg-alt); border-radius: 6px 6px 0 0; cursor: pointer; list-style: none; font-weight: 600; }
+.bdd-scenario > summary::-webkit-details-marker { display: none; }
+.bdd-scenario > summary .bdd-location { margin: 0 0 0 auto; font-weight: 400; }
+.bdd-steps { list-style: none; margin: 0; padding: 6px 10px; }
+.bdd-step { padding: 2px 0; }
+.bdd-step-line { display: flex; gap: 8px; align-items: baseline; }
+.bdd-icon { width: 14px; flex: none; text-align: center; font-weight: 700; }
+.bdd-kind { width: 64px; flex: none; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--fg-muted); }
+.bdd-step.assert .bdd-kind { padding-left: 12px; width: 64px; }   /* The template uses border-box, so the width includes padding. */
+.bdd-text { min-width: 0; overflow-wrap: anywhere; }
+.bdd-text code { font-family: var(--mono); font-size: 12px; }
+.bdd-step .duration { margin-left: auto; flex: none; font-size: 12px; color: var(--fg-muted); font-variant-numeric: tabular-nums; }
+.bdd-step.passed .bdd-icon { color: var(--pass); }
+.bdd-step.failed .bdd-icon, .bdd-step.failed .bdd-error { color: var(--fail); }
+.bdd-step.threwasexpected .bdd-icon, .bdd-step.threwasexpected .bdd-error { color: var(--skip); }
+.bdd-step.notrun .bdd-icon, .bdd-step.notrun .bdd-kind, .bdd-step.notrun .bdd-text { color: var(--fg-muted); opacity: 0.7; }
+.bdd-indent { margin: 2px 0 2px 94px; }
+.bdd-indent > summary { cursor: pointer; font-size: 12px; color: var(--fg-muted); }
+.bdd-indent pre { margin: 4px 0; }
+.bdd-error { font-size: 12px; font-family: var(--mono); overflow-wrap: anywhere; white-space: pre-wrap; }
+.bdd-step.bdd-match > .bdd-step-line { background: var(--skip-bg); border-radius: 4px; }
+mark.bdd-hit { background: var(--skip-bg); color: inherit; outline: 1px solid var(--skip); border-radius: 2px; padding: 0 1px; }
+.bdd-feature { padding: 8px 16px 10px 52px; border-bottom: 1px solid var(--border); background: var(--bg-card); font-size: 13px; }
+.bdd-feature-description { white-space: pre-wrap; color: var(--fg-muted); }
+.bdd-feature-links { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 4px; }
+.bdd-feature-links a { color: var(--accent); }
+@media (max-width: 640px) {
+  .bdd-indent { margin-left: 16px; }
+  .bdd-feature { padding-left: 16px; }
+}
+/* Davish.JustBdd: end --------------------------------------------------------- */

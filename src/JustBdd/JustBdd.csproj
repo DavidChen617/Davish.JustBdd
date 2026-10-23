@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PackageId>Davish.JustBdd</PackageId>
+    <AssemblyName>Davish.JustBdd</AssemblyName>
+    <RootNamespace>Davish.JustBdd</RootNamespace>
+  </PropertyGroup>
+
+</Project>

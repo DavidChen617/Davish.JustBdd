@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PackageId>Davish.JustBdd.XunitV3</PackageId>
+    <AssemblyName>Davish.JustBdd.XunitV3</AssemblyName>
+    <RootNamespace>Davish.JustBdd</RootNamespace>
+    <NoWarn>$(NoWarn);TPEXP</NoWarn>
+    <IsTestProject>false</IsTestProject>
+    <IsTestingPlatformApplication>false</IsTestingPlatformApplication>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../JustBdd/JustBdd.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Testing.Platform" Version="2.4.0" />
+    <PackageReference Include="System.Text.Json" Version="10.0.13" />
+    <PackageReference Include="xunit.v3.extensibility.core" Version="4.0.0" />
+    <PackageReference Include="xunit.v3.assert" Version="4.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Report/Templates/*.html;Report/Templates/*.css;Report/Templates/*.js" LogicalName="Davish.JustBdd.XunitV3.Report.%(Filename)%(Extension)" />
+    <None Include="THIRD-PARTY-NOTICES.md" Pack="true" PackagePath="" />
+    <None Include="build/Davish.JustBdd.XunitV3.props" Pack="true" PackagePath="build;buildTransitive" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Davish.JustBdd.XunitV3.Tests" />
+  </ItemGroup>
+
+</Project>
