@@ -49,6 +49,48 @@ public sealed class Scenario(
     public GivenStage<T> Given<T>(Func<ValueTask<T>> fn, [CallerArgumentExpression(nameof(fn))] string code = "")
         => GivenCore(null, code, fn);
 
+    // ---- Given setup without state: subsequent steps receive Unit
+
+    public GivenStage<Unit> Given(string desc, Action fn, [CallerArgumentExpression(nameof(fn))] string code = "")
+        => GivenCore(desc, code, Steps.ProduceUnit(fn));
+    [OverloadResolutionPriority(1)]
+    public GivenStage<Unit> Given(string desc, Func<Task> fn, [CallerArgumentExpression(nameof(fn))] string code = "")
+        => GivenCore(desc, code, Steps.ProduceUnitTask(fn));
+    public GivenStage<Unit> Given(string desc, Func<ValueTask> fn, [CallerArgumentExpression(nameof(fn))] string code = "")
+        => GivenCore(desc, code, Steps.ProduceUnitValueTask(fn));
+
+    public GivenStage<Unit> Given(Action fn, [CallerArgumentExpression(nameof(fn))] string code = "")
+        => GivenCore(null, code, Steps.ProduceUnit(fn));
+    [OverloadResolutionPriority(1)]
+    public GivenStage<Unit> Given(Func<Task> fn, [CallerArgumentExpression(nameof(fn))] string code = "")
+        => GivenCore(null, code, Steps.ProduceUnitTask(fn));
+    public GivenStage<Unit> Given(Func<ValueTask> fn, [CallerArgumentExpression(nameof(fn))] string code = "")
+        => GivenCore(null, code, Steps.ProduceUnitValueTask(fn));
+
+    // ---- Given context setup: a new TContext is filled and flows on as the state
+
+    public GivenStage<TContext> Given<TContext>(string desc, Action<TContext> setup, [CallerArgumentExpression(nameof(setup))] string code = "")
+        where TContext : new()
+        => GivenCore(desc, code, Steps.Setup(setup));
+    [OverloadResolutionPriority(1)]
+    public GivenStage<TContext> Given<TContext>(string desc, Func<TContext, Task> setup, [CallerArgumentExpression(nameof(setup))] string code = "")
+        where TContext : new()
+        => GivenCore(desc, code, Steps.SetupTask(setup));
+    public GivenStage<TContext> Given<TContext>(string desc, Func<TContext, ValueTask> setup, [CallerArgumentExpression(nameof(setup))] string code = "")
+        where TContext : new()
+        => GivenCore(desc, code, Steps.SetupValueTask(setup));
+
+    public GivenStage<TContext> Given<TContext>(Action<TContext> setup, [CallerArgumentExpression(nameof(setup))] string code = "")
+        where TContext : new()
+        => GivenCore(null, code, Steps.Setup(setup));
+    [OverloadResolutionPriority(1)]
+    public GivenStage<TContext> Given<TContext>(Func<TContext, Task> setup, [CallerArgumentExpression(nameof(setup))] string code = "")
+        where TContext : new()
+        => GivenCore(null, code, Steps.SetupTask(setup));
+    public GivenStage<TContext> Given<TContext>(Func<TContext, ValueTask> setup, [CallerArgumentExpression(nameof(setup))] string code = "")
+        where TContext : new()
+        => GivenCore(null, code, Steps.SetupValueTask(setup));
+
     // ---- When
 
     public WhenStage<Unit, T> When<T>(string desc, Func<T> fn, [CallerArgumentExpression(nameof(fn))] string code = "")

@@ -3,7 +3,7 @@ namespace Davish.JustBdd;
 public enum StepKind { Given, When, Then, Assert }
 
 /// <summary>
-/// <see cref="StepStatus.ThrewAsExpected"/> passes: When threw the expected exception, retained in <see cref="StepResult.Error"/>.
+/// <see cref="ThrewAsExpected"/> passes: When threw the expected exception, retained in <see cref="StepResult.Error"/>.
 /// </summary>
 public enum StepStatus { Passed, Failed, NotRun, ThrewAsExpected }
 
