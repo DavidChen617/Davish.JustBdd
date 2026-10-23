@@ -1,0 +1,17 @@
+<Project>
+  <!--
+    Davish.JustBdd.XunitV3 needs xunit.v3 4.x (Microsoft.Testing.Platform v2). With xunit.v3 3.2.x (mtp-v1), restore only
+    warns (NU1608) and the tests fail at run time with TypeLoadException, so fail the build with a clear message instead.
+    Microsoft.Testing.Platform still resolves to 2.x in that case, so detect the mtp-v1 package rather than the MTP version.
+  -->
+  <Target Name="DavishJustBddRejectXunitMtpV1" AfterTargets="ResolvePackageAssets">
+    <ItemGroup>
+      <_DavishJustBddMtpV1Package Include="%(RuntimeCopyLocalItems.NuGetPackageId)"
+        Condition="$([System.String]::Copy('%(RuntimeCopyLocalItems.NuGetPackageId)').StartsWith('xunit.v3', StringComparison.OrdinalIgnoreCase))
+                   And $([System.String]::Copy('%(RuntimeCopyLocalItems.NuGetPackageId)').EndsWith('mtp-v1', StringComparison.OrdinalIgnoreCase))" />
+    </ItemGroup>
+    <Error Code="JUSTBDD0001"
+      Condition="'@(_DavishJustBddMtpV1Package)' != ''"
+      Text="Davish.JustBdd.XunitV3 requires xunit.v3 4.x (Microsoft.Testing.Platform v2), but this project uses @(_DavishJustBddMtpV1Package->Distinct()). Upgrade xunit.v3 to 4.0.0 or later." />
+  </Target>
+</Project>

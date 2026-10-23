@@ -28,6 +28,7 @@
     <EmbeddedResource Include="Report/Templates/*.html;Report/Templates/*.css;Report/Templates/*.js" LogicalName="Davish.JustBdd.XunitV3.Report.%(Filename)%(Extension)" />
     <None Include="THIRD-PARTY-NOTICES.md" Pack="true" PackagePath="" />
     <None Include="build/Davish.JustBdd.XunitV3.props" Pack="true" PackagePath="build;buildTransitive" />
+    <None Include="build/Davish.JustBdd.XunitV3.targets" Pack="true" PackagePath="build;buildTransitive" />
   </ItemGroup>
 
   <ItemGroup>

@@ -24,4 +24,5 @@
   </ItemGroup>
   <!-- Project references do not import NuGet build assets automatically. -->
   <Import Project="../../src/JustBdd.Xunit/build/Davish.JustBdd.XunitV3.props" />
+  <Import Project="../../src/JustBdd.Xunit/build/Davish.JustBdd.XunitV3.targets" />
 </Project>
