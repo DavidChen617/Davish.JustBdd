@@ -278,7 +278,7 @@
           (t.errorMessage || "") + "\n" +
           (t.exceptionType || "") + "\n" +
           bddSearchText(t) + "\n" +   // Davish.JustBdd: scenarios, step descriptions, code, and exception messages
-          bddMetaSearchText(t);        // Davish.JustBdd: feature name, feature metadata, and traits
+          bddMetaSearchText(t);        // Davish.JustBdd: feature name, description, link titles, metadata, and traits
         if (hay.toLowerCase().indexOf(q) === -1) continue;
       }
       filtered.push(t);

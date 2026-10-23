@@ -34,13 +34,15 @@
     return (t._bddText = parts.filter(Boolean).join("\n"));
   }
 
-  // Feature name, feature metadata, and traits match a search without expanding scenarios.
+  // Feature name, description, link titles, metadata, and traits match a search without expanding scenarios.
+  // Link URLs are left out: a search for "https" or a domain would match every link.
   function bddMetaSearchText(t) {
     if (t._bddMetaText != null) return t._bddMetaText;
     var parts = [];
     var f = t.featureId ? bddFeatures()[t.featureId] : null;
     if (f) {
-      parts.push(f.name);
+      parts.push(f.name, f.description);
+      (f.links || []).forEach(function (l) { parts.push(l.title); });
       (f.metadata || []).forEach(function (m) { parts.push(m.key + ": " + (m.values || []).join(", ")); });
     }
     (t.traits || []).forEach(function (tr) { parts.push(tr.key + "=" + (tr.value || "")); });
