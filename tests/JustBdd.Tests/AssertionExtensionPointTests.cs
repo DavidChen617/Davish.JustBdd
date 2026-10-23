@@ -37,7 +37,8 @@ public class AssertionExtensionPointTests
             .Given(() => new User("David"))
             .When(u => u.Rename("Davish"))
             .Then("The name is updated")
-            .Assert(u => observed = u.Name);
+            .Assert(u => observed = u.Name)
+            .RunAsync();
 
         Assert.Equal("Davish", observed);
         Assert.Equal(
@@ -54,10 +55,10 @@ public class AssertionExtensionPointTests
     {
         var log = new List<string>();
 
-        await new Scenario().Given(() => 1).Then("G").Assert(x => log.Add("G"));
-        await new Scenario().When(() => 2).Then("W").Assert(x => log.Add("W"));
-        await new Scenario().Given(() => 3).Then(x => { }).Then("T").Assert(x => log.Add("T"));
-        var onlyDesc = await new Scenario().Given(() => 4).Then("Description only");
+        await new Scenario().Given(() => 1).Then("G").Assert(x => log.Add("G")).RunAsync();
+        await new Scenario().When(() => 2).Then("W").Assert(x => log.Add("W")).RunAsync();
+        await new Scenario().Given(() => 3).Then(x => { }).Then("T").Assert(x => log.Add("T")).RunAsync();
+        var onlyDesc = await new Scenario().Given(() => 4).Then("Description only").RunAsync();
 
         Assert.Equal(["G", "W", "T"], log);
         Assert.Equal(StepStatus.Passed, onlyDesc.Steps[^1].Status);
@@ -71,7 +72,8 @@ public class AssertionExtensionPointTests
         var result = await new Scenario("S")
             .Then("Then only")
             .Assert(_ => called = true)
-            .True(_ => called);
+            .True(_ => called)
+            .RunAsync();
 
         Assert.True(called);
         Assert.Equal(
@@ -87,9 +89,9 @@ public class AssertionExtensionPointTests
     {
         var then = new Scenario().Given(() => 1).Then("t");
 
-        await Assert.ThrowsAsync<InvalidOperationException>(async () => await then.Assert(async x => await FailLaterTask()));
-        await Assert.ThrowsAsync<InvalidOperationException>(async () => await then.Assert(x => FailLaterTask()));
-        await Assert.ThrowsAsync<InvalidOperationException>(async () => await then.Assert(x => FailLaterValueTask()));
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await then.Assert(async x => await FailLaterTask()).RunAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await then.Assert(x => FailLaterTask()).RunAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await then.Assert(x => FailLaterValueTask()).RunAsync());
     }
 
     [Fact]
@@ -100,7 +102,7 @@ public class AssertionExtensionPointTests
                 .Given(() => "David")
                 .Then("Name")
                 .Assert(n => Assert.Equal("Davish", n))
-                .Assert(n => { }));
+                .Assert(n => { }).RunAsync());
 
         Assert.Equal("Scenario 'S' > Assert 'n => Assert.Equal(\"Davish\", n)'", ex.Data[Scenario.StepDataKey]);
         var result = Assert.IsType<ScenarioResult>(ex.Data[Scenario.ResultDataKey]);
@@ -116,7 +118,8 @@ public class AssertionExtensionPointTests
             .Given(() => new User("David"))
             .Then("The name is correct")
             .True("Is David", u => u.Name == "David")
-            .True(u => u.Name.Length == 5);
+            .True(u => u.Name.Length == 5)
+            .RunAsync();
 
         Assert.Equal(
             [(StepKind.Assert, "Is David", "True(u => u.Name == \"David\")"),
@@ -128,7 +131,7 @@ public class AssertionExtensionPointTests
     public async Task Fluent_failure_uses_description_in_step_path()
     {
         var ex = await Assert.ThrowsAsync<Xunit.Sdk.TrueException>(async () =>
-            await new Scenario("S").Given(() => 1).Then("t").True("Equals 2", x => x == 2));
+            await new Scenario("S").Given(() => 1).Then("t").True("Equals 2", x => x == 2).RunAsync());
 
         Assert.Equal("Scenario 'S' > Assert 'Equals 2'", ex.Data[Scenario.StepDataKey]);
     }
@@ -144,7 +147,8 @@ public class AssertionExtensionPointTests
             .Then("B").Assert(x => log.Add("B"))
             .True(x => x > 0)
             .Then(x => log.Add("then"))
-            .Then("C", x => log.Add("C"));
+            .Then("C", x => log.Add("C"))
+            .RunAsync();
 
         Assert.Equal(["B", "then", "C"], log);
         Assert.Equal(
@@ -157,12 +161,12 @@ public class AssertionExtensionPointTests
     {
         var a = new Scenario().Given(() => 1).Then("t").True(x => x == 1);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(async () => await a.Then("d", async x => await FailLaterTask()));
-        await Assert.ThrowsAsync<InvalidOperationException>(async () => await a.Then("d", x => FailLaterTask()));
-        await Assert.ThrowsAsync<InvalidOperationException>(async () => await a.Then("d", x => FailLaterValueTask()));
-        await Assert.ThrowsAsync<InvalidOperationException>(async () => await a.Then(async x => await FailLaterTask()));
-        await Assert.ThrowsAsync<InvalidOperationException>(async () => await a.Then(x => FailLaterTask()));
-        await Assert.ThrowsAsync<InvalidOperationException>(async () => await a.Then(x => FailLaterValueTask()));
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await a.Then("d", async x => await FailLaterTask()).RunAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await a.Then("d", x => FailLaterTask()).RunAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await a.Then("d", x => FailLaterValueTask()).RunAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await a.Then(async x => await FailLaterTask()).RunAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await a.Then(x => FailLaterTask()).RunAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await a.Then(x => FailLaterValueTask()).RunAsync());
     }
 
     [Fact]
@@ -173,9 +177,9 @@ public class AssertionExtensionPointTests
         var left = a.AddAssertion(_ => { log.Add("left"); return default; }, null, "left");
         var right = a.AddAssertion(_ => { log.Add("right"); return default; }, null, "right");
 
-        await left;
-        await right;
-        await a;
+        await left.RunAsync();
+        await right.RunAsync();
+        await a.RunAsync();
 
         Assert.Equal(["left", "right"], log);
     }

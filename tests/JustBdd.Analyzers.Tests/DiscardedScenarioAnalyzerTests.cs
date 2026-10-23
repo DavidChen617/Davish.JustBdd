@@ -68,13 +68,14 @@ public class DiscardedScenarioAnalyzerTests
     // ---- Not reported
 
     [Fact]
-    public Task Awaited_chain()
+    public Task Run_or_awaited_RunAsync()
         => Verify("""
-            async Task M()
+            void M()
             {
-                await new Scenario().Then(() => { });
-                await new Scenario().Then(() => { }).RunAsync();
+                new Scenario().Then(() => { }).Run();   // The ScenarioResult may be discarded.
+                var result = new Scenario().Then(() => { }).Run();
             }
+            async Task N() => await new Scenario().Then(() => { }).RunAsync();
             """);
 
     [Fact]
@@ -97,7 +98,7 @@ public class DiscardedScenarioAnalyzerTests
             {
                 var stage = Build();
                 Take(new Scenario().Then(() => { }));
-                await stage;
+                await stage.RunAsync();
             }
             """);
 

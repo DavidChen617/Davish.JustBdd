@@ -8,7 +8,7 @@ public class ReportCollectorTests
 {
     private static async Task<ScenarioResult> Scenario(string name, bool fail = false)
     {
-        try { return await new Scenario(name).Given(() => 1).Then(x => { if (fail) throw new InvalidOperationException(); }); }
+        try { return await new Scenario(name).Given(() => 1).Then(x => { if (fail) throw new InvalidOperationException(); }).RunAsync(); }
         catch (InvalidOperationException ex) { return (ScenarioResult)ex.Data[Davish.JustBdd.Scenario.ResultDataKey]!; }
     }
 
@@ -90,7 +90,7 @@ public class ReporterSinkTests
     {
         var reporter = new JustBddReporter(null!, null!);
 
-        reporter.Report(await new Scenario("s").Then(() => { }));
+        reporter.Report(await new Scenario("s").Then(() => { }).RunAsync());
 
         var test = Assert.Single(reporter.Collector.Build());
         Assert.Equal(TestContext.Current.Test!.TestDisplayName, test.DisplayName);
@@ -103,7 +103,7 @@ public class HtmlWriterTests
     private static async Task<IReadOnlyList<ReportTest>> Tests(string scenarioName = "Rename")
     {
         var c = new ReportCollector();
-        c.AddScenario("UserTests.Rename", await new Scenario(scenarioName).Given("a user", () => "David").When(n => n + "sh").Then("renamed", n => Assert.Equal("Davidsh", n)));
+        c.AddScenario("UserTests.Rename", await new Scenario(scenarioName).Given("a user", () => "David").When(n => n + "sh").Then("renamed", n => Assert.Equal("Davidsh", n)).RunAsync());
         c.SetOutcome("UserTests.Rename", "passed", 5, "UserTests", "Rename");
         return c.Build();
     }

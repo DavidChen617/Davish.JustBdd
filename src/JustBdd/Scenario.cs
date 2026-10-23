@@ -3,12 +3,14 @@ using System.Runtime.CompilerServices;
 namespace Davish.JustBdd;
 
 /// <summary>
-/// Lazy Given / When / Then execution. Await the chain to obtain a <see cref="ScenarioResult"/>.
+/// Lazy Given / When / Then execution. End the chain with <c>Run()</c>, or await <c>RunAsync()</c>, to execute it
+/// and obtain a <see cref="ScenarioResult"/>.
 /// <code>
-/// await new Scenario("Rename a user")
+/// new Scenario("Rename a user")
 ///     .Given("A user exists", () => new User("David"))
 ///     .When("Rename the user", user => user.Rename("Davish"))
-///     .Then("The name is updated", user => Assert.Equal("Davish", user.Name));
+///     .Then("The name is updated", user => Assert.Equal("Davish", user.Name))
+///     .Run();
 /// </code>
 /// Descriptions are optional. A scenario defaults to the caller member name; steps default to their source code.
 /// Every step captures its lambda source in <see cref="StepInfo.Code"/>.

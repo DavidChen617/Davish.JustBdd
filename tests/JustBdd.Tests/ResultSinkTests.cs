@@ -34,7 +34,7 @@ public class ResultSinkTests
         var sink = new Collecting(id);
         using var _ = ScenarioResults.AddSink(sink);
 
-        var result = await new Scenario(id).Given(() => 1).Then(x => { });
+        var result = await new Scenario(id).Given(() => 1).Then(x => { }).RunAsync();
 
         Assert.Same(result, Assert.Single(sink.Results));
     }
@@ -47,7 +47,7 @@ public class ResultSinkTests
         using var _ = ScenarioResults.AddSink(sink);
 
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await new Scenario(id).Given(() => 1).Then(x => throw new InvalidOperationException()));
+            await new Scenario(id).Given(() => 1).Then(x => throw new InvalidOperationException()).RunAsync());
 
         Assert.False(Assert.Single(sink.Results).Passed);
     }
@@ -61,7 +61,8 @@ public class ResultSinkTests
 
         await new Scenario(id + "-outer")
             .Given(() => 1)
-            .Then(async x => { await new Scenario(id + "-inner").Given(() => 2).Then(y => { }); });
+            .Then(async x => { await new Scenario(id + "-inner").Given(() => 2).Then(y => { }).RunAsync(); })
+            .RunAsync();
 
         var outer = Assert.Single(sink.Results);
         Assert.Equal(id + "-outer", outer.Description);
@@ -75,10 +76,10 @@ public class ResultSinkTests
         var sink = new Collecting(id);
         var registration = ScenarioResults.AddSink(sink);
 
-        await new Scenario(id).Given(() => 1).Then(x => { });
+        await new Scenario(id).Given(() => 1).Then(x => { }).RunAsync();
         registration.Dispose();
         registration.Dispose();   // Disposing twice is harmless
-        await new Scenario(id).Given(() => 1).Then(x => { });
+        await new Scenario(id).Given(() => 1).Then(x => { }).RunAsync();
 
         Assert.Single(sink.Results);
     }
@@ -92,7 +93,7 @@ public class ResultSinkTests
         using var a = ScenarioResults.AddSink(first);
         using var b = ScenarioResults.AddSink(second);
 
-        await new Scenario(id).Given(() => 1).Then(x => { });
+        await new Scenario(id).Given(() => 1).Then(x => { }).RunAsync();
 
         Assert.Single(first.Results);
         Assert.Single(second.Results);
@@ -124,7 +125,7 @@ public class ResultSinkTests
         using var a = ScenarioResults.AddSink(new Throwing(id, error));
         using var b = ScenarioResults.AddSink(after);
 
-        var ex = await Assert.ThrowsAsync<IOException>(async () => await new Scenario(id).Given(() => 1).Then(x => { }));
+        var ex = await Assert.ThrowsAsync<IOException>(async () => await new Scenario(id).Given(() => 1).Then(x => { }).RunAsync());
 
         Assert.Same(error, ex);
         Assert.Single(after.Results);   // Later sinks still run after an earlier sink fails
@@ -137,7 +138,7 @@ public class ResultSinkTests
         using var _ = ScenarioResults.AddSink(new Throwing(id, new IOException()));
 
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await new Scenario(id).Given(() => 1).Then(x => throw new InvalidOperationException()));
+            await new Scenario(id).Given(() => 1).Then(x => throw new InvalidOperationException()).RunAsync());
     }
 
     [Fact]
@@ -147,7 +148,7 @@ public class ResultSinkTests
         using var a = ScenarioResults.AddSink(new Throwing(id, new IOException("a")));
         using var b = ScenarioResults.AddSink(new Throwing(id, new IOException("b")));
 
-        var ex = await Assert.ThrowsAsync<AggregateException>(async () => await new Scenario(id).Given(() => 1).Then(x => { }));
+        var ex = await Assert.ThrowsAsync<AggregateException>(async () => await new Scenario(id).Given(() => 1).Then(x => { }).RunAsync());
 
         Assert.Equal(["a", "b"], ex.InnerExceptions.Select(e => e.Message));
     }

@@ -22,7 +22,7 @@ public class GenericAwaitableResultTests
     }
 
     private static Task AssertAwaited<T>(ThenStage<T> stage)
-        => Assert.ThrowsAsync<LateException>(async () => await stage);
+        => Assert.ThrowsAsync<LateException>(async () => await stage.RunAsync());
 
     [Fact]
     public async Task Scenario_Then()
@@ -93,7 +93,8 @@ public class GenericAwaitableResultTests
         await new Scenario().Given(() => 1)
             .Then(x => log.Add("void"))          // returns void
             .Then(x => log.Remove("nothing"))     // returns bool: Action applies and the result is discarded
-            .Assert(x => log.Add("assert"));
+            .Assert(x => log.Add("assert"))
+            .RunAsync();
 
         Assert.Equal(["void", "assert"], log);
     }
@@ -103,7 +104,8 @@ public class GenericAwaitableResultTests
     {
         var result = await new Scenario().Given(() => 1)
             .Then("d", x => new ValueTask<int>(x))
-            .Assert(x => new ValueTask<int>(x));
+            .Assert(x => new ValueTask<int>(x))
+            .RunAsync();
 
         Assert.Equal(["x => new ValueTask<int>(x)", "x => new ValueTask<int>(x)"], result.Steps.Skip(1).Select(s => s.Step.Code));
     }

@@ -17,7 +17,8 @@ public class NestedScenarioTests
         var outer = await new Scenario("Outer")
             .Given("g", () => 1)
             .Then("Run inner", async x => { await Inner("Inner"); })
-            .Then("No inner", x => { });
+            .Then("No inner", x => { })
+            .RunAsync();
 
         var child = Assert.Single(outer.Steps[1].Children);
         Assert.Equal("Inner", child.Description);
@@ -34,7 +35,7 @@ public class NestedScenarioTests
             await new Scenario("Outer")
                 .Given("g", () => 1)
                 .Then("Run inner", async x => { await Inner("Inner", fail: true); })
-                .Then("Afterwards", x => { }));
+                .Then("Afterwards", x => { }).RunAsync());
 
         var outer = ResultOf(ex);
         Assert.Equal("Outer", outer.Description);
@@ -50,7 +51,8 @@ public class NestedScenarioTests
     {
         var outer = await new Scenario("Outer")
             .Given("g", () => 1)
-            .Then("Run two at once", async x => { await Task.WhenAll(Inner("A").AsTask(), Inner("B").AsTask()); });
+            .Then("Run two at once", async x => { await Task.WhenAll(Inner("A").AsTask(), Inner("B").AsTask()); })
+            .RunAsync();
 
         Assert.Equal(["A", "B"], outer.Steps[1].Children.Select(c => c.Description).OrderBy(d => d));
     }
@@ -64,8 +66,9 @@ public class NestedScenarioTests
             {
                 await new Scenario("L2")
                     .Given("g", () => 1)
-                    .Then("L2 step", async y => { await Inner("L3"); });
-            });
+                    .Then("L2 step", async y => { await Inner("L3"); })
+                    .RunAsync();
+            }).RunAsync();
 
         var l2 = Assert.Single(outer.Steps[1].Children);
         var l3 = Assert.Single(l2.Steps[1].Children);
@@ -79,7 +82,8 @@ public class NestedScenarioTests
         var outer = await new Scenario("Outer")
             .Given("g", async () => { await Inner("FromGiven"); return 1; })
             .When("w", async x => { await Inner("FromWhen"); return x; })
-            .Then("t", x => { });
+            .Then("t", x => { })
+            .RunAsync();
 
         Assert.Equal(["FromGiven"], outer.Steps[0].Children.Select(c => c.Description));
         Assert.Equal(["FromWhen"], outer.Steps[1].Children.Select(c => c.Description));
@@ -91,7 +95,8 @@ public class NestedScenarioTests
         var outer = await new Scenario("Outer")
             .Given("g", () => 1)
             .When("w", async x => { await Inner("Inner", fail: true); })
-            .ThenThrows<InvalidOperationException>("Expect the inner to fail");
+            .ThenThrows<InvalidOperationException>("Expect the inner to fail")
+            .RunAsync();
 
         var child = Assert.Single(outer.Steps[1].Children);
         Assert.False(child.Passed);

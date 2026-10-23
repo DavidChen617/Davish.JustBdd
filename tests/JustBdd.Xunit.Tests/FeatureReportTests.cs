@@ -101,7 +101,7 @@ public class FeatureReportTests
     {
         var reporter = new JustBddReporter(null!, null!);
 
-        reporter.Report(await new Scenario("s").Then(() => { }));
+        reporter.Report(await new Scenario("s").Then(() => { }).RunAsync());
 
         Assert.Equal("Create an order", Assert.Single(reporter.Collector.Build()).Feature?.Name);
     }

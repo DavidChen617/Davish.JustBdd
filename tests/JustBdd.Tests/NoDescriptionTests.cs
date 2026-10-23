@@ -33,7 +33,8 @@ public class NoDescriptionTests
             .Given(() => new User("David"))
             .When(user => user.Rename("Davish"))
             .Then(user => observed = user.Name)
-            .Then(user => { });
+            .Then(user => { })
+            .RunAsync();
 
         Assert.Equal("Davish", observed);
     }
@@ -43,11 +44,11 @@ public class NoDescriptionTests
     {
         var log = new List<string>();
 
-        await new Scenario().Given(() => 1).Then(x => log.Add("G>T"));
-        await new Scenario().When(() => 2).Then(x => log.Add("W>T"));
-        await new Scenario().When(() => log.Add("W")).Then(_ => log.Add("Wv>T"));
-        await new Scenario().Then(() => log.Add("T"));
-        await new Scenario().Given(() => new User("x")).When(u => u.RenameInPlace("y")).Then(u => log.Add(u.Name));
+        await new Scenario().Given(() => 1).Then(x => log.Add("G>T")).RunAsync();
+        await new Scenario().When(() => 2).Then(x => log.Add("W>T")).RunAsync();
+        await new Scenario().When(() => log.Add("W")).Then(_ => log.Add("Wv>T")).RunAsync();
+        await new Scenario().Then(() => log.Add("T")).RunAsync();
+        await new Scenario().Given(() => new User("x")).When(u => u.RenameInPlace("y")).Then(u => log.Add(u.Name)).RunAsync();
 
         Assert.Equal(["G>T", "W>T", "W", "Wv>T", "T", "y"], log);
     }
@@ -56,7 +57,7 @@ public class NoDescriptionTests
     public async Task Description_falls_back_to_lambda_source_text()
     {
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await new Scenario().Given(() => ThrowsInvalid<int>()).Then(_ => { }));
+            await new Scenario().Given(() => ThrowsInvalid<int>()).Then(_ => { }).RunAsync());
 
         Assert.Equal(
             $"Scenario '{nameof(Description_falls_back_to_lambda_source_text)}' > Given '() => ThrowsInvalid<int>()'",
@@ -68,14 +69,14 @@ public class NoDescriptionTests
     {
         var given = new Scenario().Given(async () => { await Task.Yield(); return new User("x"); });
 
-        await Assert.ThrowsAsync<InvalidOperationException>(async () => await given.When(async u => await FailLaterTask()).Then(_ => { }));
-        await Assert.ThrowsAsync<InvalidOperationException>(async () => await given.When(u => FailLaterValueTask()).Then(_ => { }));
-        await Assert.ThrowsAsync<InvalidOperationException>(async () => await given.Then(u => FailLaterTask()));
-        await Assert.ThrowsAsync<InvalidOperationException>(async () => await given.Then(u => FailLaterValueTask()));
-        await Assert.ThrowsAsync<InvalidOperationException>(async () => await given.Then(_ => { }).Then(async u => await FailLaterTask()));
-        await Assert.ThrowsAsync<InvalidOperationException>(async () => await new Scenario().When(() => FailLaterValueTask()).Then(_ => { }));
-        await Assert.ThrowsAsync<InvalidOperationException>(async () => await new Scenario().Then(async () => await FailLaterTask()));
-        await Assert.ThrowsAsync<InvalidOperationException>(async () => await new Scenario().When(() => ThrowsInvalid<int>()).Then(_ => { }));
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await given.When(async u => await FailLaterTask()).Then(_ => { }).RunAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await given.When(u => FailLaterValueTask()).Then(_ => { }).RunAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await given.Then(u => FailLaterTask()).RunAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await given.Then(u => FailLaterValueTask()).RunAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await given.Then(_ => { }).Then(async u => await FailLaterTask()).RunAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await new Scenario().When(() => FailLaterValueTask()).Then(_ => { }).RunAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await new Scenario().Then(async () => await FailLaterTask()).RunAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await new Scenario().When(() => ThrowsInvalid<int>()).Then(_ => { }).RunAsync());
     }
 
     [Fact]
@@ -86,7 +87,8 @@ public class NoDescriptionTests
         await new Scenario("Mixed")
             .Given(() => new User("David"))
             .When("Rename", user => user.Rename("Davish"))
-            .Then(user => observed = user.Name);
+            .Then(user => observed = user.Name)
+            .RunAsync();
 
         Assert.Equal("Davish", observed);
     }

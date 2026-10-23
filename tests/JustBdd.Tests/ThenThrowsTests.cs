@@ -35,7 +35,8 @@ public class ThenThrowsTests
             .Given(() => given = new Account("David"))
             .When("Rename to null", a => a.Rename(null))
             .ThenThrows<ArgumentNullException>("Rejects an empty name")
-            .Then("The name is unchanged", t => seen = t);
+            .Then("The name is unchanged", t => seen = t)
+            .RunAsync();
 
         Assert.NotNull(seen);
         Assert.Same(given, seen.State);
@@ -53,7 +54,8 @@ public class ThenThrowsTests
             .Given(() => given = new Account("David"))
             .When(a => a.Renamed(null))
             .ThenThrows<ArgumentNullException>()
-            .Then(t => state = t.State);
+            .Then(t => state = t.State)
+            .RunAsync();
 
         Assert.Same(given, state);
     }
@@ -66,7 +68,8 @@ public class ThenThrowsTests
         await new Scenario()
             .When(() => throw new InvalidOperationException())
             .ThenThrows<InvalidOperationException>("Throw")
-            .Then(t => state = t.State);
+            .Then(t => state = t.State)
+            .RunAsync();
 
         Assert.Equal(default(Unit), state);
     }
@@ -80,7 +83,8 @@ public class ThenThrowsTests
             .Given(() => new Account("David"))
             .When(a => a.Rename(null))
             .ThenThrows<ArgumentException>()
-            .Then(t => caught = t.Exception);
+            .Then(t => caught = t.Exception)
+            .RunAsync();
 
         Assert.IsType<ArgumentNullException>(caught);
     }
@@ -92,7 +96,7 @@ public class ThenThrowsTests
             await new Scenario("S")
                 .Given(() => new Account("David"))
                 .When("Rename to null", a => a.Rename(null))
-                .ThenThrows<InvalidOperationException>("Expect a different exception"));
+                .ThenThrows<InvalidOperationException>("Expect a different exception").RunAsync());
 
         Assert.Equal("Scenario 'S' > When 'Rename to null'", StepOf(ex));
         var result = Assert.IsType<ScenarioResult>(ex.Data[Scenario.ResultDataKey]);
@@ -107,7 +111,7 @@ public class ThenThrowsTests
                 .Given(() => new Account("David"))
                 .When("Rename normally", a => a.Rename("Davish"))
                 .ThenThrows<ArgumentNullException>("Rejects an empty name")
-                .Then(_ => { }));
+                .Then(_ => { }).RunAsync());
 
         Assert.Equal("Scenario 'S' > Then 'Rejects an empty name'", StepOf(ex));
         Assert.Contains(nameof(ArgumentNullException), ex.Message);
@@ -122,9 +126,9 @@ public class ThenThrowsTests
     {
         var given = new Scenario().Given(() => new Account("David"));
 
-        await given.When(a => a.RenameAsync(null)).ThenThrows<ArgumentNullException>();
-        await given.When(a => a.RenameValueTaskAsync(null)).ThenThrows<ArgumentNullException>();
-        await given.When(async a => { await Task.Yield(); return a.Renamed(null); }).ThenThrows<ArgumentNullException>();
+        await given.When(a => a.RenameAsync(null)).ThenThrows<ArgumentNullException>().RunAsync();
+        await given.When(a => a.RenameValueTaskAsync(null)).ThenThrows<ArgumentNullException>().RunAsync();
+        await given.When(async a => { await Task.Yield(); return a.Renamed(null); }).ThenThrows<ArgumentNullException>().RunAsync();
     }
 
     [Fact]
@@ -133,9 +137,9 @@ public class ThenThrowsTests
         var thrown = new Scenario().Given(() => new Account("David")).When(a => a.Rename(null)).ThenThrows<ArgumentNullException>("t");
 
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await thrown.Then(async t => { await Task.Yield(); throw new InvalidOperationException(); }));
+            await thrown.Then(async t => { await Task.Yield(); throw new InvalidOperationException(); }).RunAsync());
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await thrown.Then(t => FailLaterValueTask()));
+            await thrown.Then(t => FailLaterValueTask()).RunAsync());
     }
 
     [Fact]
@@ -145,7 +149,8 @@ public class ThenThrowsTests
             .Given(() => new Account("David"))
             .When("Rename to null", a => a.Rename(null))
             .ThenThrows<ArgumentNullException>("Rejects an empty name")
-            .Then(t => { });
+            .Then(t => { })
+            .RunAsync();
 
         Assert.Equal(
             [(StepKind.Given, StepStatus.Passed, (string?)null, "() => new Account(\"David\")"),
@@ -163,7 +168,8 @@ public class ThenThrowsTests
             .Given(() => new Account("David"))
             .When(a => a.Rename(null))
             .ThenThrows("Any exception")
-            .Then(t => caught = t.Exception);
+            .Then(t => caught = t.Exception)
+            .RunAsync();
 
         Assert.IsType<ArgumentNullException>(caught);
     }
@@ -176,7 +182,8 @@ public class ThenThrowsTests
             .When(a => a.Rename(null))
             .ThenThrows<ArgumentNullException>()
             .Assert(t => Assert.Equal("David", t.State.Name))
-            .True(t => t.Exception.ParamName == "name");
+            .True(t => t.Exception.ParamName == "name")
+            .RunAsync();
 
         Assert.Equal(
             ["() => new Account(\"David\")", "a => a.Rename(null)", "ThenThrows<ArgumentNullException>()",
@@ -193,7 +200,8 @@ public class ThenThrowsTests
             .Given(() => new Account("David"))
             .When(a => a.Rename(null))
             .ThenThrows<ArgumentNullException>()
-            .Then(t => caught = t.Exception);
+            .Then(t => caught = t.Exception)
+            .RunAsync();
 
         var when = result.Steps[1];
         Assert.Equal(StepStatus.ThrewAsExpected, when.Status);

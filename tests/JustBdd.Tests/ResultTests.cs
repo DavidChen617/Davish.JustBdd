@@ -29,7 +29,7 @@ public class ResultTests
     [Fact]
     public async Task Awaiting_the_stage_returns_the_result()
     {
-        ScenarioResult result = await new Scenario().Then(() => { });
+        ScenarioResult result = await new Scenario().Then(() => { }).RunAsync();
 
         Assert.Equal(nameof(Awaiting_the_stage_returns_the_result), result.Description);
         Assert.Single(result.Steps);
@@ -40,7 +40,7 @@ public class ResultTests
     {
         var (scenario, line) = (new Scenario(), Line());
 
-        var result = await scenario.Then(() => { });
+        var result = await scenario.Then(() => { }).RunAsync();
 
         Assert.EndsWith("ResultTests.cs", result.FilePath);
         Assert.Equal(line, result.LineNumber);
@@ -55,7 +55,8 @@ public class ResultTests
                 var user = new User("David");
                 return user;
             })
-            .Then(_ => { });
+            .Then(_ => { })
+            .RunAsync();
 
         Assert.Contains("var user = new User(\"David\");", result.Steps[0].Step.Code);
     }
@@ -68,7 +69,7 @@ public class ResultTests
                 .Given("g", () => 1)
                 .When("Breaks", x => Fail())
                 .Then("Will not run", _ => { })
-                .Then(_ => { }));
+                .Then(_ => { }).RunAsync());
 
         var result = Assert.IsType<ScenarioResult>(ex.Data[Scenario.ResultDataKey]);
         Assert.False(result.Passed);
@@ -83,7 +84,7 @@ public class ResultTests
     public async Task Step_path_uses_code_when_description_missing()
     {
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await new Scenario("S").Then(() => Fail()));
+            await new Scenario("S").Then(() => Fail()).RunAsync());
 
         Assert.Equal("Scenario 'S' > Then '() => Fail()'", ex.Data[Scenario.StepDataKey]);
     }

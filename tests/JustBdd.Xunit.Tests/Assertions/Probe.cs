@@ -7,14 +7,14 @@ internal static class Probe
     /// <summary>The assertion passes, and the last step records the expected description and code.</summary>
     public static async Task Passes<T>(ThenStage<T> a, string? desc, string code)
     {
-        var result = await a;
+        var result = await a.RunAsync();
         var step = result.Steps[^1];
         Assert.Equal((StepKind.Assert, StepStatus.Passed, desc, code), (step.Step.Kind, step.Status, step.Step.Description, step.Step.Code));
     }
 
     /// <summary>The assertion fails with xUnit's own assertion exception, not wrapped by the core.</summary>
     public static Task<XunitException> Fails<T>(ThenStage<T> a)
-        => Assert.ThrowsAnyAsync<XunitException>(async () => await a);
+        => Assert.ThrowsAnyAsync<XunitException>(async () => await a.RunAsync());
 }
 
 internal sealed class User(string name, object? account = null)

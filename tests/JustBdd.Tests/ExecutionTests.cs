@@ -23,8 +23,8 @@ public class LazyTests
             .Given("g", () => ++givens)
             .Then("t", _ => { });
 
-        await stage;
-        await stage;
+        await stage.RunAsync();
+        await stage.RunAsync();
 
         Assert.Equal(2, givens);
     }
@@ -38,9 +38,9 @@ public class LazyTests
         var right = given.Then("right", _ => log.Add("right"));
         var leftMore = left.Then("left2", _ => log.Add("left2"));
 
-        await right;
-        await left;
-        await leftMore;
+        await right.RunAsync();
+        await left.RunAsync();
+        await leftMore.RunAsync();
 
         Assert.Equal(["right", "left", "left", "left2"], log);
     }
@@ -56,7 +56,7 @@ public class FailureTests
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await new Scenario("S")
                 .Given("Broken Given", () => ThrowsInvalid<int>())
-                .Then("t", _ => { }));
+                .Then("t", _ => { }).RunAsync());
 
         Assert.Equal("Scenario 'S' > Given 'Broken Given'", StepOf(ex));
     }
@@ -68,7 +68,7 @@ public class FailureTests
             await new Scenario("S")
                 .Given("g", () => 1)
                 .When("Broken When", x => ThrowsInvalid<int>())
-                .Then("t", _ => { }));
+                .Then("t", _ => { }).RunAsync());
 
         Assert.Equal("Scenario 'S' > When 'Broken When'", StepOf(ex));
     }
@@ -79,7 +79,7 @@ public class FailureTests
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await new Scenario("S")
                 .When("w", async () => { await Task.Yield(); throw new InvalidOperationException(); })
-                .Then("t", _ => { }));
+                .Then("t", _ => { }).RunAsync());
 
         Assert.Equal("Scenario 'S' > When 'w'", StepOf(ex));
     }
@@ -90,7 +90,7 @@ public class FailureTests
         var ex = await Assert.ThrowsAsync<Xunit.Sdk.EqualException>(async () =>
             await new Scenario("S")
                 .Given("g", () => "David")
-                .Then("The name is Davish", name => Assert.Equal("Davish", name)));
+                .Then("The name is Davish", name => Assert.Equal("Davish", name)).RunAsync());
 
         Assert.Equal("Scenario 'S' > Then 'The name is Davish'", StepOf(ex));
     }
@@ -105,7 +105,7 @@ public class FailureTests
                 .Given("g", () => 1)
                 .Then("ok", _ => { })
                 .Then("Breaks", _ => throw new InvalidOperationException())
-                .Then("Should not run", _ => reached = true));
+                .Then("Should not run", _ => reached = true).RunAsync());
 
         Assert.False(reached);
         Assert.Equal("Scenario 'S' > Then 'Breaks'", StepOf(ex));

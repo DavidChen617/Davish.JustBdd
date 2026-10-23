@@ -111,7 +111,8 @@ public class CollectionTests
             .Equal("David", u => u.Name)
             .NotEmpty(u => u.Numbers)
             .Then("Numbers")
-            .Contains(2, u => u.Numbers);
+            .Contains(2, u => u.Numbers)
+            .RunAsync();
 
         Assert.Equal(
             ["Equal(\"David\", u => u.Name)", "NotEmpty(u => u.Numbers)", "Contains(2, u => u.Numbers)"],

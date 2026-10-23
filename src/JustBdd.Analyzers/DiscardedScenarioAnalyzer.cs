@@ -6,8 +6,8 @@ using Microsoft.CodeAnalysis.Operations;
 namespace Davish.JustBdd.Analyzers;
 
 /// <summary>
-/// JBDD001: a scenario chain used as a statement is never run. Scenarios are lazy, so without an await the test
-/// passes without running any step; in a sync method the compiler reports nothing.
+/// JBDD001: a scenario chain used as a statement is never run. Scenarios are lazy and run only through Run() or
+/// RunAsync(); a discarded chain lets the test pass without running any step.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class DiscardedScenarioAnalyzer : DiagnosticAnalyzer
@@ -17,11 +17,11 @@ public sealed class DiscardedScenarioAnalyzer : DiagnosticAnalyzer
     internal static readonly DiagnosticDescriptor Rule = new(
         DiagnosticId,
         title: "Scenario is never run",
-        messageFormat: "The scenario is never run. Await it or call RunAsync and await the result.",
+        messageFormat: "The scenario is never run. End the chain with Run(), or await RunAsync().",
         category: "Usage",
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
-        description: "Scenarios run only when awaited. A discarded chain lets the test pass without running any step.");
+        description: "Scenarios run only through Run() or RunAsync(). A discarded chain lets the test pass without running any step.");
 
     // Matched by metadata name: this netstandard2.0 analyzer cannot reference the core assembly.
     private static readonly string[] StageTypeNames =

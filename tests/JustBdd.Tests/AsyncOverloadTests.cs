@@ -33,7 +33,7 @@ public class AsyncOverloadTests
     }
 
     private static Task AssertAwaited<T>(ThenStage<T> stage)
-        => Assert.ThrowsAsync<LateException>(async () => await stage);
+        => Assert.ThrowsAsync<LateException>(async () => await stage.RunAsync());
 
     // ---- With a value: picking the wrong overload makes T a Task<User>, so user.Name below would not compile
 
@@ -43,7 +43,8 @@ public class AsyncOverloadTests
         string? observed = null;
         await new Scenario("s")
             .Given("g", async () => { await Task.Yield(); return new User("A"); })
-            .Then("t", user => observed = user.Name);
+            .Then("t", user => observed = user.Name)
+            .RunAsync();
         Assert.Equal("A", observed);
     }
 
@@ -51,7 +52,7 @@ public class AsyncOverloadTests
     public async Task Given_returning_Task_without_async()
     {
         string? observed = null;
-        await new Scenario("s").Given("g", () => LoadTask("A")).Then("t", user => observed = user.Name);
+        await new Scenario("s").Given("g", () => LoadTask("A")).Then("t", user => observed = user.Name).RunAsync();
         Assert.Equal("A", observed);
     }
 
@@ -59,7 +60,7 @@ public class AsyncOverloadTests
     public async Task Given_returning_ValueTask_without_async()
     {
         string? observed = null;
-        await new Scenario("s").Given("g", () => LoadValueTask("A")).Then("t", user => observed = user.Name);
+        await new Scenario("s").Given("g", () => LoadValueTask("A")).Then("t", user => observed = user.Name).RunAsync();
         Assert.Equal("A", observed);
     }
 
@@ -67,8 +68,8 @@ public class AsyncOverloadTests
     public async Task Scenario_When_returning_Task_and_ValueTask_values()
     {
         string? a = null, b = null;
-        await new Scenario("s").When("w", () => LoadTask("A")).Then("t", user => a = user.Name);
-        await new Scenario("s").When("w", () => LoadValueTask("B")).Then("t", user => b = user.Name);
+        await new Scenario("s").When("w", () => LoadTask("A")).Then("t", user => a = user.Name).RunAsync();
+        await new Scenario("s").When("w", () => LoadValueTask("B")).Then("t", user => b = user.Name).RunAsync();
         Assert.Equal(("A", "B"), (a, b));
     }
 
@@ -78,9 +79,9 @@ public class AsyncOverloadTests
         string? a = null, b = null, c = null;
         var given = new Scenario("s").Given("g", () => new User("x"));
 
-        await given.When("w", async user => { await Task.Yield(); return user.Rename("A"); }).Then("t", u => a = u.Name);
-        await given.When("w", user => LoadTask("B")).Then("t", u => b = u.Name);
-        await given.When("w", user => LoadValueTask("C")).Then("t", u => c = u.Name);
+        await given.When("w", async user => { await Task.Yield(); return user.Rename("A"); }).Then("t", u => a = u.Name).RunAsync();
+        await given.When("w", user => LoadTask("B")).Then("t", u => b = u.Name).RunAsync();
+        await given.When("w", user => LoadValueTask("C")).Then("t", u => c = u.Name).RunAsync();
 
         Assert.Equal(("A", "B", "C"), (a, b, c));
     }

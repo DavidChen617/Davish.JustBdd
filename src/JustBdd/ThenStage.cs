@@ -120,10 +120,30 @@ public sealed class ThenStage<T>
     }
 
     /// <summary>
+    /// Runs the chain synchronously and returns its result; a failure throws the original exception.
+    /// Use it in synchronous tests and await <see cref="RunAsync"/> in asynchronous tests.
+    /// </summary>
+    public ScenarioResult Run()
+    {
+        // Async steps must not resume on a caller's single-threaded context while this call blocks it.
+        var context = SynchronizationContext.Current;
+        SynchronizationContext.SetSynchronizationContext(null);
+        try
+        {
+            var run = RunAsync();
+            return run.IsCompletedSuccessfully ? run.Result : run.AsTask().GetAwaiter().GetResult();
+        }
+        finally
+        {
+            SynchronizationContext.SetSynchronizationContext(context);
+        }
+    }
+
+    /// <summary>
     /// Every call executes the chain from Given again. Await each returned ValueTask only once.
     /// Failures preserve the exception and store results in <c>exception.Data[Scenario.ResultDataKey]</c>.
     /// Execution inside another scenario step adds the result to that step's <see cref="StepResult.Children"/>.
-    /// Start execution (RunAsync or await) inside the step; work started outside is not collected.
+    /// Start execution (Run or RunAsync) inside the step; work started outside is not collected.
     /// </summary>
     public async ValueTask<ScenarioResult> RunAsync()
     {
@@ -156,6 +176,4 @@ public sealed class ThenStage<T>
             return Steps.AttachResult(ex, result = rec.ToResult(_ctx, _steps));
         }
     }
-
-    public ValueTaskAwaiter<ScenarioResult> GetAwaiter() => RunAsync().GetAwaiter();
 }

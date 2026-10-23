@@ -22,7 +22,8 @@ Use one of these options:
   await new Scenario()
       .Given(async Task<User> () => await LoadUserAsync())
       .When(async ValueTask (user) => await user.RenameAsync("Davish"))
-      .Then(void (_) => throw new InvalidOperationException());
+      .Then(void (_) => throw new InvalidOperationException())
+      .RunAsync();
   ```
 
   Method groups and typed delegate variables, such as `.Then(CheckAsync)`, also work.

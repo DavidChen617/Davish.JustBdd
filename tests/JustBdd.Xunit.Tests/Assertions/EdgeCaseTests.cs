@@ -20,11 +20,11 @@ public class EdgeCaseTests
         var box = new Box(null, null);
 
         var expectedForCollection = ThrownByXunit(() => Assert.Contains(1, (List<int>)null!));
-        var actualForCollection = await Record.ExceptionAsync(async () => await On(box).Contains(1, b => b.Numbers!));
+        var actualForCollection = await Record.ExceptionAsync(async () => await On(box).Contains(1, b => b.Numbers!).RunAsync());
         Assert.IsType(expectedForCollection, actualForCollection);
 
         var expectedForString = ThrownByXunit(() => Assert.StartsWith("a", (string?)null));
-        var actualForString = await Record.ExceptionAsync(async () => await On(box).StartsWith("a", b => b.Name));
+        var actualForString = await Record.ExceptionAsync(async () => await On(box).StartsWith("a", b => b.Name).RunAsync());
         Assert.IsType(expectedForString, actualForString);
     }
 
@@ -50,7 +50,8 @@ public class EdgeCaseTests
             .Equal(1, x => x)
             .When(x => x + 1)
             .Then("Is 2")
-            .Equal(2, x => x);
+            .Equal(2, x => x)
+            .RunAsync();
 
         Assert.Equal(
             [StepKind.Given, StepKind.Then, StepKind.Assert, StepKind.When, StepKind.Then, StepKind.Assert],

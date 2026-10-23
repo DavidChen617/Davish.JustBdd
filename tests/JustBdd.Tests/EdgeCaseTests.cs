@@ -34,7 +34,7 @@ public class EdgeCaseTests
             await new Scenario("S")
                 .Given<int>("Broken Given", () => throw new ArgumentException())
                 .When("w", x => whenRan = true)
-                .ThenThrows<ArgumentException>("Expect When to throw"));
+                .ThenThrows<ArgumentException>("Expect When to throw").RunAsync());
 
         Assert.False(whenRan);
         Assert.Equal("Scenario 'S' > Given 'Broken Given'", StepOf(ex));
@@ -50,11 +50,11 @@ public class EdgeCaseTests
 
         var paths = new List<string?>
         {
-            StepOf(await Assert.ThrowsAsync<InvalidOperationException>(async () => await given.Then("t", x => ThrowNowTask()))),
-            StepOf(await Assert.ThrowsAsync<InvalidOperationException>(async () => await given.Then("t", x => ThrowNowValueTask()))),
-            StepOf(await Assert.ThrowsAsync<InvalidOperationException>(async () => await given.Then("t", x => ThrowNowValueTaskOfT()))),
-            StepOf(await Assert.ThrowsAsync<InvalidOperationException>(async () => await given.When("w", x => ThrowNowTaskOfT()).Then(_ => { }))),
-            StepOf(await Assert.ThrowsAsync<InvalidOperationException>(async () => await new Scenario("S").Given("g", () => ThrowNowValueTaskOfT()).Then(_ => { }))),
+            StepOf(await Assert.ThrowsAsync<InvalidOperationException>(async () => await given.Then("t", x => ThrowNowTask()).RunAsync())),
+            StepOf(await Assert.ThrowsAsync<InvalidOperationException>(async () => await given.Then("t", x => ThrowNowValueTask()).RunAsync())),
+            StepOf(await Assert.ThrowsAsync<InvalidOperationException>(async () => await given.Then("t", x => ThrowNowValueTaskOfT()).RunAsync())),
+            StepOf(await Assert.ThrowsAsync<InvalidOperationException>(async () => await given.When("w", x => ThrowNowTaskOfT()).Then(_ => { }).RunAsync())),
+            StepOf(await Assert.ThrowsAsync<InvalidOperationException>(async () => await new Scenario("S").Given("g", () => ThrowNowValueTaskOfT()).Then(_ => { }).RunAsync())),
         };
 
         Assert.Equal(
@@ -99,7 +99,7 @@ public class EdgeCaseTests
                 .Given<int>("g", () => throw new InvalidOperationException())
                 .When("w", x => x + 1)
                 .Then("t1", x => { })
-                .Then("t2", x => { }));
+                .Then("t2", x => { }).RunAsync());
 
         Assert.Equal(
             [StepStatus.Failed, StepStatus.NotRun, StepStatus.NotRun, StepStatus.NotRun],
@@ -115,7 +115,8 @@ public class EdgeCaseTests
             .Given(() => (string?)null)
             .When(s => seen.Add(s))
             .Then(s => seen.Add(s))
-            .Assert(s => Assert.Null(s));
+            .Assert(s => Assert.Null(s))
+            .RunAsync();
 
         Assert.Equal([null, null], seen);
         Assert.True(result.Passed);
@@ -128,9 +129,9 @@ public class EdgeCaseTests
     {
         Effects.Clear();
 
-        var sync = await new Scenario().Given(Make).Then(x => Assert.Equal(1, x));
-        var async = await new Scenario().Given(MakeAsync).When(x => x + 1).Then(x => Assert.Equal(3, x));
-        var voidWhen = await new Scenario().Given(Make).When(Effect).Then(x => Assert.Equal(1, x));
+        var sync = await new Scenario().Given(Make).Then(x => Assert.Equal(1, x)).RunAsync();
+        var async = await new Scenario().Given(MakeAsync).When(x => x + 1).Then(x => Assert.Equal(3, x)).RunAsync();
+        var voidWhen = await new Scenario().Given(Make).When(Effect).Then(x => Assert.Equal(1, x)).RunAsync();
 
         Assert.Equal(["Make", "MakeAsync", "Effect"], new[] { sync.Steps[0], async.Steps[0], voidWhen.Steps[1] }.Select(s => s.Step.Code));
         Assert.Equal([1], Effects);
@@ -143,7 +144,7 @@ public class EdgeCaseTests
         Func<int, Task<int>> doubleAsync = async x => { await Task.Yield(); return x * 2; };
         Func<int, ValueTask> check = x => { Assert.Equal(2, x); return default; };
 
-        var result = await new Scenario().Given(() => 1).When(doubleAsync).Then(check);
+        var result = await new Scenario().Given(() => 1).When(doubleAsync).Then(check).RunAsync();
 
         Assert.True(result.Passed);
         Assert.Equal(["doubleAsync", "check"], result.Steps.Skip(1).Select(s => s.Step.Code));
@@ -157,7 +158,7 @@ public class EdgeCaseTests
     public async Task Blank_description_falls_back_to_code(string blank)
     {
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await new Scenario("S").Given(blank, () => 1).Then(blank, x => ThrowNowTask()));
+            await new Scenario("S").Given(blank, () => 1).Then(blank, x => ThrowNowTask()).RunAsync());
 
         Assert.Equal("Scenario 'S' > Then 'x => ThrowNowTask()'", StepOf(ex));
         Assert.All(ResultOf(ex).Steps, s => Assert.Null(s.Step.Description));
@@ -173,9 +174,9 @@ public class EdgeCaseTests
                 .Given("g", () => 1)
                 .Then("Run inner", async x =>
                 {
-                    await new Scenario("Inner").When<int>("Inner breaks", () => throw new InvalidOperationException()).Then(_ => { });
+                    await new Scenario("Inner").When<int>("Inner breaks", () => throw new InvalidOperationException()).Then(_ => { }).RunAsync();
                 })
-                .Then("After outer", x => { }));
+                .Then("After outer", x => { }).RunAsync());
 
         Assert.Equal("Scenario 'Inner' > When 'Inner breaks'", StepOf(ex));
         var outer = ResultOf(ex);

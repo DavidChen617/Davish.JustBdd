@@ -10,7 +10,8 @@ public class ScenarioPathTests
         await new Scenario("Rename")
             .Given("A user exists", () => new User("David"))
             .When("Rename to Davish", user => user.Rename("Davish"))
-            .Then("The name is updated", user => observed = user.Name);
+            .Then("The name is updated", user => observed = user.Name)
+            .RunAsync();
 
         Assert.Equal("Davish", observed);
     }
@@ -22,7 +23,8 @@ public class ScenarioPathTests
 
         await new Scenario("Create")
             .Given("A user exists", () => new User("David"))
-            .Then("The name is correct", user => observed = user.Name);
+            .Then("The name is correct", user => observed = user.Name)
+            .RunAsync();
 
         Assert.Equal("David", observed);
     }
@@ -34,7 +36,8 @@ public class ScenarioPathTests
 
         await new Scenario("Calculate")
             .When("Add", () => 1 + 2)
-            .Then("The result is 3", result => observed = result);
+            .Then("The result is 3", result => observed = result)
+            .RunAsync();
 
         Assert.Equal(3, observed);
     }
@@ -46,7 +49,8 @@ public class ScenarioPathTests
 
         await new Scenario("Side effects")
             .When("Run", () => calls.Add("when"))
-            .Then("It ran", _ => calls.Add("then"));
+            .Then("It ran", _ => calls.Add("then"))
+            .RunAsync();
 
         Assert.Equal(["when", "then"], calls);
     }
@@ -57,7 +61,8 @@ public class ScenarioPathTests
         var called = false;
 
         await new Scenario("Then only")
-            .Then("Run", () => called = true);
+            .Then("Run", () => called = true)
+            .RunAsync();
 
         Assert.True(called);
     }
@@ -71,7 +76,8 @@ public class ScenarioPathTests
             .Given("A user exists", () => new User("David"))
             .Then("First", user => seen.Add("1:" + user.Name))
             .Then("Second", user => seen.Add("2:" + user.Name))
-            .Then("Third", user => seen.Add("3:" + user.Name));
+            .Then("Third", user => seen.Add("3:" + user.Name))
+            .RunAsync();
 
         Assert.Equal(["1:David", "2:David", "3:David"], seen);
     }
@@ -84,7 +90,8 @@ public class ScenarioPathTests
         await new Scenario("Rename (void)")
             .Given("A user exists", () => new User("David"))
             .When("Rename", user => user.RenameInPlace("Davish"))
-            .Then("The same instance is updated", user => observed = user.Name);
+            .Then("The same instance is updated", user => observed = user.Name)
+            .RunAsync();
 
         Assert.Equal("Davish", observed);
     }
@@ -97,7 +104,8 @@ public class ScenarioPathTests
         await new Scenario("Transform")
             .Given("A user exists", () => new User("David"))
             .When("Take the name length", user => user.Name.Length)
-            .Then("The length is 5", length => observed = length);
+            .Then("The length is 5", length => observed = length)
+            .RunAsync();
 
         Assert.Equal(5, observed);
     }

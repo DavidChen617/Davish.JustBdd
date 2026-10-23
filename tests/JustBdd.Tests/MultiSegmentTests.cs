@@ -13,7 +13,8 @@ public class MultiSegmentTests
             .When("Rename to Davish", u => u.Rename("Davish"))
             .Then("The name is Davish", u => { first = u; Assert.Equal("Davish", u.Name); })
             .When("Rename again to Dave", u => u.RenameInPlace("Dave"))
-            .Then("The name is Dave", u => { second = u; Assert.Equal("Dave", u.Name); });
+            .Then("The name is Dave", u => { second = u; Assert.Equal("Dave", u.Name); })
+            .RunAsync();
 
         Assert.Same(first, second);
         Assert.Equal(
@@ -32,7 +33,8 @@ public class MultiSegmentTests
             .When(u => u.Rename("Davish"))
             .Then(u => Assert.Equal("Davish", u.Name))
             .When(u => u.Name.Length)
-            .Then(length => observed = length);
+            .Then(length => observed = length)
+            .RunAsync();
 
         Assert.Equal(6, observed);
     }
@@ -48,7 +50,7 @@ public class MultiSegmentTests
                 .When(x => x + 1)
                 .Then("Equals 3", x => Assert.Equal(3, x))
                 .When("Second segment", x => { secondWhenRan = true; })
-                .Then(x => { }));
+                .Then(x => { }).RunAsync());
 
         Assert.False(secondWhenRan);
         Assert.Equal("Scenario 'S' > Then 'Equals 3'", ex.Data[Scenario.StepDataKey]);
@@ -69,7 +71,8 @@ public class MultiSegmentTests
             .When(u => { if (u.Name == "David") throw new ArgumentException("bad"); })
             .ThenThrows<ArgumentException>()
             .When(t => { received = t; t.State.RenameInPlace("Davish"); })
-            .Then(t => finalName = t.State.Name);
+            .Then(t => finalName = t.State.Name)
+            .RunAsync();
 
         Assert.NotNull(received);
         Assert.Equal("bad", received.Exception.Message);
@@ -85,7 +88,8 @@ public class MultiSegmentTests
             .When(() => log.Add("w1"))
             .Then(_ => log.Add("t1"))
             .When(_ => log.Add("w2"))
-            .Then(_ => log.Add("t2"));
+            .Then(_ => log.Add("t2"))
+            .RunAsync();
 
         Assert.Equal(["w1", "t1", "w2", "t2"], log);
         Assert.Equal(4, result.Steps.Count);
@@ -97,8 +101,8 @@ public class MultiSegmentTests
         var log = new List<string>();
         var then = new Scenario().Given(() => 1).Then(x => log.Add($"then {x}"));
 
-        var left = await then.When(x => x + 1).Then(x => log.Add($"left {x}"));
-        var right = await then.When(x => x * 10).Then(x => log.Add($"right {x}"));
+        var left = await then.When(x => x + 1).Then(x => log.Add($"left {x}")).RunAsync();
+        var right = await then.When(x => x * 10).Then(x => log.Add($"right {x}")).RunAsync();
 
         Assert.Equal(["then 1", "left 2", "then 1", "right 10"], log);
         Assert.Equal(4, left.Steps.Count);
@@ -125,23 +129,23 @@ public class MultiSegmentTests
         int observed = 0;
         string? name = null;
 
-        await then.When("map", x => x + 1).Then(x => observed = x);
+        await then.When("map", x => x + 1).Then(x => observed = x).RunAsync();
         Assert.Equal(4, observed);
-        await then.When("map task", x => DoubleLater(x)).Then(x => observed = x);
+        await then.When("map task", x => DoubleLater(x)).Then(x => observed = x).RunAsync();
         Assert.Equal(6, observed);
-        await then.When(async x => await DoubleLater(x)).Then(x => observed = x);
+        await then.When(async x => await DoubleLater(x)).Then(x => observed = x).RunAsync();
         Assert.Equal(6, observed);
-        await then.When(x => new ValueTask<int>(x + 10)).Then(x => observed = x);
+        await then.When(x => new ValueTask<int>(x + 10)).Then(x => observed = x).RunAsync();
         Assert.Equal(13, observed);
 
-        await user.When("pass", u => u.RenameInPlace("Pass")).Then(u => name = u.Name);
+        await user.When("pass", u => u.RenameInPlace("Pass")).Then(u => name = u.Name).RunAsync();
         Assert.Equal("Pass", name);
-        await user.When(u => TouchLater(u)).Then(u => name = u.Name);
+        await user.When(u => TouchLater(u)).Then(u => name = u.Name).RunAsync();
         Assert.Equal("Async", name);
-        await user.When(async u => await TouchLater(u)).Then(u => name = u.Name);
+        await user.When(async u => await TouchLater(u)).Then(u => name = u.Name).RunAsync();
         Assert.Equal("Async", name);
         // Every await reruns from Given, so a no-op When sees a fresh User.
-        await user.When(u => new ValueTask()).Then(u => name = u.Name);
+        await user.When(u => new ValueTask()).Then(u => name = u.Name).RunAsync();
         Assert.Equal("David", name);
     }
 
@@ -155,7 +159,8 @@ public class MultiSegmentTests
             .Then("Is 1")
             .Assert(x => Assert.Equal(1, x))
             .When(x => x + 1)
-            .Then(x => observed = x);
+            .Then(x => observed = x)
+            .RunAsync();
 
         Assert.Equal(2, observed);
         Assert.Equal(
