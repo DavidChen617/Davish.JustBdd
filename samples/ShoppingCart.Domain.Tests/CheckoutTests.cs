@@ -34,22 +34,16 @@ public class CheckoutTests
     [Fact]
     public void Checked_out_cart_cannot_be_changed()
     {
-        // Nested scenario: use another scenario to prepare a checked-out cart.
-        Cart? closed = null;
+        // Nested scenario: another scenario prepares the cart and runs as the Given step.
         new Scenario("A checked-out cart cannot be changed")
-            .Given("A checked-out cart", () =>
-            {
+            .Given("A checked-out cart",
                 new Scenario("Prepare a checked-out cart")
                     .Given("The cart contains a book", () => new Cart().Add(Book))
                     .When("The customer checks out", cart => { cart.Checkout(); })   // Preserve the cart state instead of returning the order.
-                    .Then("The cart is checked out", cart => Assert.True(cart.IsCheckedOut))
-                    .Then("The cart is retained", cart => closed = cart)
-                    .Run();
-                return closed!;
-            })
+                    .Then("The cart is checked out", cart => Assert.True(cart.IsCheckedOut)))
             .When("A pen is added after checkout", cart => cart.Add(Pen))
             .ThenThrows<InvalidOperationException>("The change is rejected")
             .Contains("The error message explains that the cart is already checked out", "already been checked out", t => t.Exception.Message)
-                    .Run();
+            .Run();
     }
 }

@@ -6,7 +6,7 @@ namespace Davish.JustBdd.Analyzers.Tests;
 public class DiscardedScenarioAnalyzerTests
 {
     // {|JBDD001:...|} marks where the diagnostic must be reported; code without markup must produce no diagnostic.
-    private static Task Verify(string members)
+    private static Task Verify(string members, params DiagnosticResult[] expected)
     {
         var test = new CSharpAnalyzerTest<DiscardedScenarioAnalyzer, DefaultVerifier>
         {
@@ -23,6 +23,7 @@ public class DiscardedScenarioAnalyzerTests
             ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
         };
         test.TestState.AdditionalReferences.Add(typeof(Scenario).Assembly);
+        test.ExpectedDiagnostics.AddRange(expected);
         return test.RunAsync(TestContext.Current.CancellationToken);
     }
 
@@ -112,5 +113,60 @@ public class DiscardedScenarioAnalyzerTests
             {
                 class ThenStage<T> { }
                 class Scenario { }
+            """);
+
+    // ---- A step lambda that returns a scenario turns the scenario into state instead of running it
+
+    private static DiagnosticResult Expected(int location, string advice)
+        => new DiagnosticResult(DiscardedScenarioAnalyzer.DiagnosticId, Microsoft.CodeAnalysis.DiagnosticSeverity.Warning)
+            .WithLocation(location)
+            .WithMessage("The scenario is never run. " + advice);
+
+    private const string GivenAdvice = "Pass it directly: Given(\"...\", scenario).";
+    private const string WhenAdvice = "Run it inside the step, or pass it to Given.";
+
+    [Fact]
+    public Task Given_lambda_returning_a_scenario_is_reported()
+        => Verify("""
+            void M()
+            {
+                new Scenario().Given("Prepared", {|#0:() => new Scenario().Given(() => 1).Then(x => { })|}).When(s => s).Then(s => { }).Run();   // reported once, not again on the When
+                new Scenario().Given({|#1:() => Task.FromResult(new Scenario().Then(() => { }))|}).Then(s => { }).Run();   // Task-returning; async lambdas are ambiguous under C# 12
+            }
+            """, Expected(0, GivenAdvice), Expected(1, GivenAdvice));
+
+    [Fact]
+    public Task When_lambda_returning_a_scenario_is_reported()
+        => Verify("""
+            void M()
+            {
+                new Scenario().Given(() => 1).When({|#0:x => new Scenario().Then(() => { })|}).Then(s => { }).Run();
+                new Scenario().Given(() => { }).When("unit", {|#1:() => new Scenario().Then(() => { })|}).Then(s => { }).Run();
+            }
+            """, Expected(0, WhenAdvice), Expected(1, WhenAdvice));
+
+    [Fact]
+    public Task Then_lambda_returning_a_scenario_is_a_discarded_chain()
+        => Verify("""
+            void M()
+            {
+                new Scenario().Given(() => 1)
+                    .Then(x => {|#0:new Scenario().Then(() => { })|})
+                    .And(x => {|#1:new Scenario().Then(() => { })|})
+                    .Run();
+            }
+            """,
+            Expected(0, "End the chain with Run(), or await RunAsync()."),
+            Expected(1, "End the chain with Run(), or await RunAsync()."));
+
+    [Fact]
+    public Task Passing_a_scenario_or_returning_a_value_is_not_reported()
+        => Verify("""
+            void M()
+            {
+                var prepared = new Scenario().Given(() => 1).Then(x => { });
+                new Scenario().Given("Prepared", prepared).When(x => x + 1).Then(x => { }).Run();
+                new Scenario().Given(() => 1).When(x => new Scenario().Given(() => x).Then(y => { }).Run()).Then(r => { }).Run();
+            }
             """);
 }

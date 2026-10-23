@@ -97,6 +97,9 @@ internal static class Steps
     public static Func<ValueTask<Unit>> ProduceUnitTask(Func<Task> fn) => async () => { await fn(); return default; };
     public static Func<ValueTask<Unit>> ProduceUnitValueTask(Func<ValueTask> fn) => async () => { await fn(); return default; };
 
+    // Given(scenario) runs the scenario inside the step and continues with its final state.
+    public static Func<ValueTask<T>> Nested<T>(ThenStage<T> scenario) => async () => (await scenario.RunCoreAsync()).State;
+
     // A parameterless step on a Unit stage ignores the Unit input.
     public static Func<Unit, ValueTask<TOut>> Ignore<TOut>(Func<ValueTask<TOut>> fn) => _ => fn();
 

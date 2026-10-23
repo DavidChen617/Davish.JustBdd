@@ -59,6 +59,13 @@ public sealed class Scenario(
     public GivenStage<T> Given<T>(Func<ValueTask<T>> fn, [CallerArgumentExpression(nameof(fn))] string code = "")
         => GivenCore(null, code, fn);
 
+    // ---- Given another scenario: it runs as this step, and its final state flows on
+
+    public GivenStage<T> Given<T>(string desc, ThenStage<T> scenario, [CallerArgumentExpression(nameof(scenario))] string code = "")
+        => GivenCore(desc, code, Steps.Nested(scenario));
+    public GivenStage<T> Given<T>(ThenStage<T> scenario, [CallerArgumentExpression(nameof(scenario))] string code = "")
+        => GivenCore(null, code, Steps.Nested(scenario));
+
     // ---- Given setup without state: subsequent steps receive Unit
 
     public GivenStage<Unit> Given(string desc, Action fn, [CallerArgumentExpression(nameof(fn))] string code = "")

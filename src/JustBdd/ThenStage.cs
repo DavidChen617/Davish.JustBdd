@@ -193,7 +193,10 @@ public sealed class ThenStage<T>
     /// Execution inside another scenario step adds the result to that step's <see cref="StepResult.Children"/>.
     /// Start execution (Run or RunAsync) inside the step; work started outside is not collected.
     /// </summary>
-    public async ValueTask<ScenarioResult> RunAsync()
+    public async ValueTask<ScenarioResult> RunAsync() => (await RunCoreAsync()).Result;
+
+    // Runs the chain and also returns its final state, which Given(scenario) passes on.
+    internal async ValueTask<(ScenarioResult Result, T State)> RunCoreAsync()
     {
         var parent = Nesting.Current;   // Capture the enclosing collector before executing any steps.
         var rec = new Recorder();
@@ -203,7 +206,8 @@ public sealed class ThenStage<T>
         {
             var state = await _run(rec);
             await RunChecks(_ctx, _thens, rec, state);
-            return result = rec.ToResult(_ctx, _steps);
+            result = rec.ToResult(_ctx, _steps);
+            return (result, state);
         }
         catch (Exception ex) when (Fault(ex)) { throw; }
         finally
