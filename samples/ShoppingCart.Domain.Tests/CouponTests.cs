@@ -1,6 +1,10 @@
 namespace ShoppingCart.Domain.Tests;
 
-[Feature<CouponFeature>]
+// A feature declared inline, without a feature class.
+[Feature("Coupons", Description = "A cart holds one percentage coupon; applying another replaces it.")]
+[FeatureLinks("Coupon rules (example)", "https://example.com/specs/coupons")]
+[FeatureMetadata("Owner", "team-pricing")]
+[FeatureMetadata("Tags", "pricing", "coupon")]
 public class CouponTests
 {
     private static readonly Product Book = new("BOOK-1", "Domain-Driven Design", 1200m);

@@ -134,6 +134,7 @@
   function groupLabel(id) {
     if (id === "__all__") return null;
     if (state.groupBy === "feature") return bddFeatureLabel(id);   // Davish.JustBdd
+    if (state.groupBy.indexOf("trait:") === 0 && id !== "(none)") return state.groupBy.substring(6) + ": " + id;   // Davish.JustBdd
     if (state.groupBy === "duration") {
       for (var i = 0; i < DURATION_BUCKETS.length; i++) {
         if (DURATION_BUCKETS[i].id === id) return DURATION_BUCKETS[i].label;
@@ -161,16 +162,22 @@
     ];
     if (bddHasFeatures()) options.splice(1, 0, { v: "feature", l: "Feature" });   // Davish.JustBdd
     traitKeys().forEach(function (k) {
-      options.push({ v: "trait:" + k, l: "Trait: " + k });
+      options.push({ v: "trait:" + k, l: k, g: "Traits" });   // Davish.JustBdd: traits in their own group
     });
     sel.innerHTML = "";
     var match = false;
+    var groups = Object.create(null);   // Davish.JustBdd: optgroup per o.g
     options.forEach(function (o) {
       var opt = document.createElement("option");
       opt.value = o.v;
       opt.textContent = o.l;
       if (o.v === state.groupBy) { opt.selected = true; match = true; }
-      sel.appendChild(opt);
+      var parent = sel;
+      if (o.g) {
+        if (!groups[o.g]) { groups[o.g] = document.createElement("optgroup"); groups[o.g].label = o.g; sel.appendChild(groups[o.g]); }
+        parent = groups[o.g];
+      }
+      parent.appendChild(opt);
     });
     if (!match) state.groupBy = "none";
   }
@@ -270,7 +277,8 @@
           (t.architecture || "") + "\n" +
           (t.errorMessage || "") + "\n" +
           (t.exceptionType || "") + "\n" +
-          bddSearchText(t);   // Davish.JustBdd: scenarios, step descriptions, code, and exception messages
+          bddSearchText(t) + "\n" +   // Davish.JustBdd: scenarios, step descriptions, code, and exception messages
+          bddMetaSearchText(t);        // Davish.JustBdd: feature name, feature metadata, and traits
         if (hay.toLowerCase().indexOf(q) === -1) continue;
       }
       filtered.push(t);
@@ -536,6 +544,8 @@
       bddBadge.title = t.scenarios.length + " Davish.JustBdd scenario(s)";
       bddBadge.textContent = "BDD";
       name.appendChild(bddBadge);
+      var bddFeature = bddFeatureBadge(t);   // Davish.JustBdd: feature badge
+      if (bddFeature) name.appendChild(bddFeature);
 
       // Davish.JustBdd: show scenario names directly in the list
       var scenarioNames = [];

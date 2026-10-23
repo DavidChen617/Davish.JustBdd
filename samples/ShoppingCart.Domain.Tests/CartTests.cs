@@ -7,6 +7,7 @@ public class CartTests
     private static readonly Product Pen = new("PEN-1", "Fountain pen", 300m);
 
     [Fact]
+    [Trait("Category", "Smoke")]
     public void Adding_products_updates_the_total()
     {
         new Scenario("Add products to an empty cart")

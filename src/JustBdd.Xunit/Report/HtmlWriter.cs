@@ -82,6 +82,7 @@ internal static class HtmlWriter
                 ["className"] = t.ClassName,
                 ["methodName"] = t.MethodName,
                 ["scenarios"] = new JsonArray(t.Scenarios.Select(ScenarioJson.ToNode).ToArray()),
+                ["traits"] = new JsonArray(t.Traits.Select(p => (JsonNode)new JsonObject { ["key"] = p.Key, ["value"] = p.Value }).ToArray()),
             };
             // Emit each feature once; tests reference it by id.
             if (t.Feature is { } f)
@@ -93,6 +94,11 @@ internal static class HtmlWriter
                         ["name"] = f.Name,
                         ["description"] = f.Description,
                         ["links"] = new JsonArray(f.Links.Select(l => (JsonNode)new JsonObject { ["title"] = l.Title, ["url"] = l.Url }).ToArray()),
+                        ["metadata"] = new JsonArray(f.Metadata.Select(m => (JsonNode)new JsonObject
+                        {
+                            ["key"] = m.Key,
+                            ["values"] = new JsonArray(m.Value.Select(v => (JsonNode)JsonValue.Create(v)!).ToArray()),
+                        }).ToArray()),
                     };
             }
             rows.Add(row);

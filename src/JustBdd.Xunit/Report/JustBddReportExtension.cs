@@ -1,4 +1,3 @@
-using Microsoft.Testing.Platform.Builder;
 using Microsoft.Testing.Platform.CommandLine;
 using Microsoft.Testing.Platform.Configurations;
 using Microsoft.Testing.Platform.Extensions;
@@ -79,7 +78,12 @@ internal sealed class JustBddReporter(ICommandLineOptions options, IConfiguratio
         {
             var method = node.Properties.SingleOrDefault<TestMethodIdentifierProperty>();
             var duration = node.Properties.SingleOrDefault<TimingProperty>()?.GlobalTiming.Duration.TotalMilliseconds ?? 0;
-            Collector.SetOutcome(node.DisplayName, outcome, duration, method?.TypeName, method?.MethodName);
+            // xUnit reports each trait as a TestMetadataProperty. PropertyBag order is an implementation detail
+            // (it enumerates in reverse insertion order), so sort for a stable report.
+            var traits = node.Properties.AsEnumerable().OfType<TestMetadataProperty>()
+                .OrderBy(t => t.Key, StringComparer.Ordinal).ThenBy(t => t.Value, StringComparer.Ordinal)
+                .Select(t => new KeyValuePair<string, string>(t.Key, t.Value)).ToArray();
+            Collector.SetOutcome(node.DisplayName, outcome, duration, method?.TypeName, method?.MethodName, traits);
         }
         return Task.CompletedTask;
     }

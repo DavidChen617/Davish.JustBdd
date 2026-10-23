@@ -19,10 +19,9 @@ public sealed class CheckoutFeature : IFeature
         so that an order is created with the discounted total.
         """;
     public IReadOnlyList<FeatureLink> Links => [new("Checkout spec (example)", "https://example.com/specs/checkout")];
-}
-
-public sealed class CouponFeature : IFeature
-{
-    public string Name => "Coupons";
-    public string? Description => "A cart holds one percentage coupon; applying another replaces it.";
+    public IReadOnlyList<KeyValuePair<string, IReadOnlyList<string>>> Metadata =>
+    [
+        new("Owner", ["team-checkout"]),
+        new("Priority", ["High"]),
+    ];
 }

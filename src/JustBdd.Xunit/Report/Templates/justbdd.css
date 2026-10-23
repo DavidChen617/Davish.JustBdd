@@ -27,7 +27,10 @@
 mark.bdd-hit { background: var(--skip-bg); color: inherit; outline: 1px solid var(--skip); border-radius: 2px; padding: 0 1px; }
 .bdd-feature { padding: 8px 16px 10px 52px; border-bottom: 1px solid var(--border); background: var(--bg-card); font-size: 13px; }
 .bdd-feature-description { white-space: pre-wrap; color: var(--fg-muted); }
+.bdd-feature-meta { display: flex; flex-wrap: wrap; gap: 4px 18px; margin-top: 6px; color: var(--fg); }
+.bdd-feature-key { color: var(--fg-muted); }
 .bdd-feature-links { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 4px; }
+.bdd-feature-badge { display: inline-block; font-size: 10px; padding: 1px 7px; margin-left: 6px; border-radius: 999px; color: var(--bg-card); background: var(--accent); font-weight: 600; vertical-align: middle; }
 .bdd-feature-links a { color: var(--accent); }
 @media (max-width: 640px) {
   .bdd-indent { margin-left: 16px; }

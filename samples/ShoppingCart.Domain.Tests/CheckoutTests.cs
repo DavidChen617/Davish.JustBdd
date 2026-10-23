@@ -7,6 +7,7 @@ public class CheckoutTests
     private static readonly Product Pen = new("PEN-1", "Fountain pen", 300m);
 
     [Fact]
+    [Trait("Category", "Smoke")]
     public void Checkout_creates_an_order_with_the_discounted_total()
     {
         new Scenario("Check out with a coupon")
@@ -21,6 +22,8 @@ public class CheckoutTests
     }
 
     [Fact]
+    [Trait("Category", "Smoke")]
+    [Trait("Owner", "team-a")]
     public void Empty_cart_cannot_be_checked_out()
     {
         new Scenario("Check out an empty cart")

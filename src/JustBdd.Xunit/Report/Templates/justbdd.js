@@ -34,6 +34,19 @@
     return (t._bddText = parts.filter(Boolean).join("\n"));
   }
 
+  // Feature name, feature metadata, and traits match a search without expanding scenarios.
+  function bddMetaSearchText(t) {
+    if (t._bddMetaText != null) return t._bddMetaText;
+    var parts = [];
+    var f = t.featureId ? bddFeatures()[t.featureId] : null;
+    if (f) {
+      parts.push(f.name);
+      (f.metadata || []).forEach(function (m) { parts.push(m.key + ": " + (m.values || []).join(", ")); });
+    }
+    (t.traits || []).forEach(function (tr) { parts.push(tr.key + "=" + (tr.value || "")); });
+    return (t._bddMetaText = parts.filter(Boolean).join("\n"));
+  }
+
   function bddMatchesScenario(t) {
     var q = bddQuery();
     return !!q && !!t.scenarios && t.scenarios.length > 0 && bddSearchText(t).toLowerCase().indexOf(q) !== -1;
@@ -191,10 +204,21 @@
     var f = bddFeatures()[id];
     if (!f) return null;
     var links = (f.links || []).filter(function (l) { return l && bddSafeUrl(l.url); });
-    if (!f.description && links.length === 0) return null;
+    var metadata = f.metadata || [];
+    if (!f.description && links.length === 0 && metadata.length === 0) return null;
 
     var panel = bddEl("div", "bdd-feature");
     if (f.description) panel.appendChild(bddEl("div", "bdd-feature-description", f.description));
+    if (metadata.length) {
+      var meta = bddEl("div", "bdd-feature-meta");
+      metadata.forEach(function (m) {
+        var item = bddEl("span");
+        item.appendChild(bddEl("span", "bdd-feature-key", m.key + ": "));
+        item.appendChild(document.createTextNode((m.values || []).join(", ")));
+        meta.appendChild(item);
+      });
+      panel.appendChild(meta);
+    }
     if (links.length) {
       var list = bddEl("div", "bdd-feature-links");
       links.forEach(function (l) {
@@ -207,5 +231,14 @@
       panel.appendChild(list);
     }
     return panel;
+  }
+
+  // The row badge names the feature, unless the rows are already grouped under it.
+  function bddFeatureBadge(t) {
+    var f = t.featureId ? bddFeatures()[t.featureId] : null;
+    if (!f || state.groupBy === "feature") return null;
+    var badge = bddEl("span", "bdd-feature-badge", "\u25c6 " + f.name);
+    badge.title = "Feature: " + f.name;
+    return badge;
   }
   // Davish.JustBdd: end ---------------------------------------------------------
