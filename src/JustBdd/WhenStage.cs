@@ -42,7 +42,7 @@ public sealed class WhenStage<TIn, TOut>
     public ThenStage<TOut> Then<TIgnored>(Func<TOut, ValueTask<TIgnored>> fn, [CallerArgumentExpression(nameof(fn))] string code = "")
         => ThenCore(null, code, Steps.CheckValueTaskOf(fn));
 
-    private ThenStage<TOut> ThenCore(string? desc, string code, Func<TOut, ValueTask> fn)
+    internal ThenStage<TOut> ThenCore(string? desc, string code, Func<TOut, ValueTask> fn)
     {
         var step = new StepInfo(StepKind.Then, desc, code);
         return new(_ctx, [.. _steps, step], Steps.Chain(_ctx, _when, _prev, _fn), [Steps.Then(_ctx, step, fn)]);

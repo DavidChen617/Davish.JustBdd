@@ -69,13 +69,13 @@ public sealed class GivenStage<T>
     public ThenStage<T> Then<TIgnored>(Func<T, ValueTask<TIgnored>> fn, [CallerArgumentExpression(nameof(fn))] string code = "")
         => ThenCore(null, code, Steps.CheckValueTaskOf(fn));
 
-    private WhenStage<T, TOut> WhenCore<TOut>(string? desc, string code, Func<T, ValueTask<TOut>> fn)
+    internal WhenStage<T, TOut> WhenCore<TOut>(string? desc, string code, Func<T, ValueTask<TOut>> fn)
     {
         var step = new StepInfo(StepKind.When, desc, code);
         return new(_ctx, [.. _steps, step], step, _run, fn);
     }
 
-    private ThenStage<T> ThenCore(string? desc, string code, Func<T, ValueTask> fn)
+    internal ThenStage<T> ThenCore(string? desc, string code, Func<T, ValueTask> fn)
     {
         var step = new StepInfo(StepKind.Then, desc, code);
         return new(_ctx, [.. _steps, step], _run, [Steps.Then(_ctx, step, fn)]);

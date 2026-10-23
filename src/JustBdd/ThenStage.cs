@@ -37,6 +37,31 @@ public sealed class ThenStage<T>
     public ThenStage<T> Then<TIgnored>(Func<T, ValueTask<TIgnored>> fn, [CallerArgumentExpression(nameof(fn))] string code = "")
         => AddStep(StepKind.Then, null, code, Steps.CheckValueTaskOf(fn));
 
+    // ---- And: continues the Thens on the same state, recorded as StepKind.And
+
+    /// <summary>Adds a description-only And followed by assertions.</summary>
+    public ThenStage<T> And(string desc) => AddStep(StepKind.And, desc, "", Steps.Noop<T>());
+
+    public ThenStage<T> And(string desc, Action<T> fn, [CallerArgumentExpression(nameof(fn))] string code = "")
+        => AddStep(StepKind.And, desc, code, Steps.Check(fn));
+    [OverloadResolutionPriority(1)]
+    public ThenStage<T> And(string desc, Func<T, Task> fn, [CallerArgumentExpression(nameof(fn))] string code = "")
+        => AddStep(StepKind.And, desc, code, Steps.CheckTask(fn));
+    public ThenStage<T> And(string desc, Func<T, ValueTask> fn, [CallerArgumentExpression(nameof(fn))] string code = "")
+        => AddStep(StepKind.And, desc, code, fn);
+    public ThenStage<T> And<TIgnored>(string desc, Func<T, ValueTask<TIgnored>> fn, [CallerArgumentExpression(nameof(fn))] string code = "")
+        => AddStep(StepKind.And, desc, code, Steps.CheckValueTaskOf(fn));
+
+    public ThenStage<T> And(Action<T> fn, [CallerArgumentExpression(nameof(fn))] string code = "")
+        => AddStep(StepKind.And, null, code, Steps.Check(fn));
+    [OverloadResolutionPriority(1)]
+    public ThenStage<T> And(Func<T, Task> fn, [CallerArgumentExpression(nameof(fn))] string code = "")
+        => AddStep(StepKind.And, null, code, Steps.CheckTask(fn));
+    public ThenStage<T> And(Func<T, ValueTask> fn, [CallerArgumentExpression(nameof(fn))] string code = "")
+        => AddStep(StepKind.And, null, code, fn);
+    public ThenStage<T> And<TIgnored>(Func<T, ValueTask<TIgnored>> fn, [CallerArgumentExpression(nameof(fn))] string code = "")
+        => AddStep(StepKind.And, null, code, Steps.CheckValueTaskOf(fn));
+
     // ---- Assert
 
     public ThenStage<T> Assert(Action<T> fn, [CallerArgumentExpression(nameof(fn))] string code = "")
@@ -96,7 +121,7 @@ public sealed class ThenStage<T>
         => WhenCore(null, code, Steps.PassValueTask(fn));
 
     // The new segment's input runs every step so far, then passes the unchanged state on.
-    private WhenStage<T, TOut> WhenCore<TOut>(string? desc, string code, Func<T, ValueTask<TOut>> fn)
+    internal WhenStage<T, TOut> WhenCore<TOut>(string? desc, string code, Func<T, ValueTask<TOut>> fn)
     {
         var step = new StepInfo(StepKind.When, desc, code);
         var (run, thens) = (_run, _thens);

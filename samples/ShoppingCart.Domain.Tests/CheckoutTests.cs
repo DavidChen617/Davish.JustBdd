@@ -16,7 +16,7 @@ public class CheckoutTests
                 .NotEqual("The order has an ID", Guid.Empty, x => x.Order.Id)
                 .Equal("The order contains two line items", 2, x => x.Order.Lines.Count)
                 .Equal("The total is (1200 + 300) × 90%", 1350m, x => x.Order.Total, 2)
-            .Then("The cart is checked out", x => Assert.True(x.Cart.IsCheckedOut))
+            .And("The cart is checked out", x => Assert.True(x.Cart.IsCheckedOut))
             .Run();
     }
 

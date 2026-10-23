@@ -1,6 +1,6 @@
 namespace Davish.JustBdd;
 
-public enum StepKind { Given, When, Then, Assert }
+public enum StepKind { Given, When, Then, Assert, And }
 
 /// <summary>
 /// <see cref="ThrewAsExpected"/> passes: When threw the expected exception, retained in <see cref="StepResult.Error"/>.

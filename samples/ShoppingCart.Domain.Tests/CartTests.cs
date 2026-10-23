@@ -26,7 +26,7 @@ public class CartTests
             .Given("The cart contains one pen", () => new Cart().Add(Pen))
             .When("Two more pens are added", cart => cart.Add(Pen, 2))
             .Then("The cart still contains one line item", cart => Assert.Single(cart.Lines))
-            .Then("The quantities are merged into three", cart => Assert.Equal(3, cart.Lines[0].Quantity))
+            .And("The quantities are merged into three", cart => Assert.Equal(3, cart.Lines[0].Quantity))
             .Run();
     }
 

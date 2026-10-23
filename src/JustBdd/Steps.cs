@@ -97,6 +97,9 @@ internal static class Steps
     public static Func<ValueTask<Unit>> ProduceUnitTask(Func<Task> fn) => async () => { await fn(); return default; };
     public static Func<ValueTask<Unit>> ProduceUnitValueTask(Func<ValueTask> fn) => async () => { await fn(); return default; };
 
+    // A parameterless step on a Unit stage ignores the Unit input.
+    public static Func<Unit, ValueTask<TOut>> Ignore<TOut>(Func<ValueTask<TOut>> fn) => _ => fn();
+
     // A context setup fills a new instance, which becomes the state.
     public static Func<ValueTask<T>> Setup<T>(Action<T> fn) where T : new() => () => { var x = new T(); fn(x); return new ValueTask<T>(x); };
     public static Func<ValueTask<T>> SetupTask<T>(Func<T, Task> fn) where T : new() => async () => { var x = new T(); await fn(x); return x; };
