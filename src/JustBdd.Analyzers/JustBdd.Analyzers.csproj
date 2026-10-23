@@ -3,9 +3,6 @@
   <PropertyGroup>
     <!-- Compilers load analyzers, possibly on .NET Framework, so analyzers must target netstandard2.0. -->
     <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>latest</LangVersion>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
     <AssemblyName>Davish.JustBdd.Analyzers</AssemblyName>
     <RootNamespace>Davish.JustBdd.Analyzers</RootNamespace>
     <!-- Shipped inside the Davish.JustBdd package under analyzers/dotnet/cs. -->

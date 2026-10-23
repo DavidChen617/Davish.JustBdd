@@ -1,18 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net11.0</TargetFramework>
-    <OutputType>Exe</OutputType>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <IsPackable>false</IsPackable>
-    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
     <AssemblyName>Davish.JustBdd.Analyzers.Tests</AssemblyName>
     <RootNamespace>Davish.JustBdd.Analyzers.Tests</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
-    <Using Include="Xunit" />
-    <PackageReference Include="xunit.v3.mtp-v2" Version="4.0.1" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing" Version="1.1.4" />
     <!-- Match the analyzer's Roslyn version so tests run against the minimum supported compiler API. -->
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.8.0" />
