@@ -10,4 +10,10 @@
     <RootNamespace>Davish.JustBdd</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- Build the analyzer first and ship it under analyzers/dotnet/cs. It is neither a runtime nor a package dependency. -->
+    <ProjectReference Include="../JustBdd.Analyzers/JustBdd.Analyzers.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    <None Include="../JustBdd.Analyzers/bin/$(Configuration)/netstandard2.0/Davish.JustBdd.Analyzers.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+  </ItemGroup>
+
 </Project>

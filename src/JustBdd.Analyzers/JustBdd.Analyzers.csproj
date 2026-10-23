@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Compilers load analyzers, possibly on .NET Framework, so analyzers must target netstandard2.0. -->
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>Davish.JustBdd.Analyzers</AssemblyName>
+    <RootNamespace>Davish.JustBdd.Analyzers</RootNamespace>
+    <!-- Shipped inside the Davish.JustBdd package under analyzers/dotnet/cs. -->
+    <IsPackable>false</IsPackable>
+    <IsRoslynComponent>true</IsRoslynComponent>
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- The Roslyn version is the minimum compiler that loads this analyzer: 4.8 = .NET 8 SDK / VS 17.8, matching xunit.v3 4. -->
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
+    <AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Davish.JustBdd.Analyzers.Tests" />
+  </ItemGroup>
+
+</Project>

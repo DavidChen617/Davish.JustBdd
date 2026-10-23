@@ -18,6 +18,10 @@
     <ProjectReference Include="../ShoppingCart.Domain/ShoppingCart.Domain.csproj" />
     <ProjectReference Include="../../src/JustBdd.Xunit/JustBdd.Xunit.csproj" />
   </ItemGroup>
+  <!-- Project references do not load the analyzers shipped in the package; reference them directly. -->
+  <ItemGroup>
+    <ProjectReference Include="../../src/JustBdd.Analyzers/JustBdd.Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
   <!-- Project references do not import NuGet build assets automatically. -->
   <Import Project="../../src/JustBdd.Xunit/build/Davish.JustBdd.XunitV3.props" />
 </Project>
