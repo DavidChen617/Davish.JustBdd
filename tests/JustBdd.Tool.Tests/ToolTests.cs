@@ -125,6 +125,14 @@ public sealed class ToolTests : IDisposable
     }
 
     [Fact]
+    public void Help_names_the_installed_command()
+    {
+        Assert.Equal(0, Run("html", "--help"));
+
+        Assert.Contains("justbdd html [<inputs>...] [options]", _output.ToString());
+    }
+
+    [Fact]
     public void Unknown_option_is_a_parse_error()
         => Assert.NotEqual(0, Run("html", "--nope"));
 }
