@@ -118,7 +118,7 @@ public class HtmlWriterTests
     [Fact]
     public async Task Embeds_tests_and_scenarios_in_the_template_data_island()
     {
-        var (_, data) = Island(HtmlWriter.Render(await Tests(), DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, "xunit"));
+        var (_, data) = Island(HtmlReport.Render(await Tests(), DateTimeOffset.UtcNow, DateTimeOffset.UtcNow));
 
         Assert.Equal(HtmlWriter.Title, data.GetProperty("testApplication").GetString());
         Assert.Equal(1, data.GetProperty("summary").GetProperty("total").GetInt32());
@@ -135,7 +135,7 @@ public class HtmlWriterTests
     {
         const string attack = "</script><script>alert(1)</script>";
 
-        var (island, data) = Island(HtmlWriter.Render(await Tests(attack), DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, "xunit"));
+        var (island, data) = Island(HtmlReport.Render(await Tests(attack), DateTimeOffset.UtcNow, DateTimeOffset.UtcNow));
 
         Assert.DoesNotContain("</script>", island, StringComparison.OrdinalIgnoreCase);
         Assert.Equal(attack, data.GetProperty("tests")[0].GetProperty("scenarios")[0].GetProperty("description").GetString());
@@ -144,7 +144,7 @@ public class HtmlWriterTests
     [Fact]
     public async Task No_template_placeholder_is_left_and_attribution_is_kept()
     {
-        var html = HtmlWriter.Render(await Tests(), DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, "xunit");
+        var html = HtmlReport.Render(await Tests(), DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
 
         Assert.DoesNotContain("__MTP_", html);
         Assert.Contains("Microsoft.Testing.Extensions.HtmlReport", html);
@@ -154,7 +154,7 @@ public class HtmlWriterTests
     [Fact]
     public async Task Template_parts_are_inlined_without_placeholders()
     {
-        var html = HtmlWriter.Render(await Tests(), DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, "xunit");
+        var html = HtmlReport.Render(await Tests(), DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
 
         Assert.DoesNotContain("/*__", html);
         Assert.Contains("function bddScenario(", html);   // justbdd.js

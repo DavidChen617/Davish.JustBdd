@@ -2,8 +2,9 @@
 
 ## Microsoft.Testing.Extensions.HtmlReport — HTML report template
 
-`Report/Templates/report.html`, `report.css`, and `report.js` are adapted from the
-embedded resource `Microsoft.Testing.Extensions.HtmlReport.Templates.report-template.html`
+`src/JustBdd.Report/Templates/report.html`, `report.css`, and `report.js` (embedded in
+`Davish.JustBdd.XunitV3.dll`) are adapted from the embedded resource
+`Microsoft.Testing.Extensions.HtmlReport.Templates.report-template.html`
 in Microsoft.Testing.Extensions.HtmlReport 2.4.0, split into separate files.
 Local modifications are marked with `Davish.JustBdd` comments; `justbdd.css` and
 `justbdd.js` are original to Davish.JustBdd.

@@ -9,4 +9,10 @@
     <ProjectReference Include="../../src/JustBdd.Xunit/JustBdd.Xunit.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Validates CTRF output against the official schema in Ctrf/. -->
+    <PackageReference Include="JsonSchema.Net" Version="9.4.1" />
+    <None Include="Ctrf/ctrf.schema.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

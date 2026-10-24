@@ -162,7 +162,7 @@ public class FeatureReportTests
         c.AddScenario("T.B", await Scenario("b"), Checkout);
         c.AddScenario("T.C", await Scenario("c"));
 
-        var html = HtmlWriter.Render(c.Build(), DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, "xunit");
+        var html = HtmlReport.Render(c.Build(), DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
         var json = Regex.Match(html, """<script id="mtp-data" type="application/json">(.*?)</script>""", RegexOptions.Singleline).Groups[1].Value;
         var data = JsonDocument.Parse(json).RootElement;
 
@@ -185,7 +185,7 @@ public class FeatureReportTests
         var c = new ReportCollector();
         c.AddScenario("T.A", await Scenario("a"));
 
-        var html = HtmlWriter.Render(c.Build(), DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, "xunit");
+        var html = HtmlReport.Render(c.Build(), DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
         var json = Regex.Match(html, """<script id="mtp-data" type="application/json">(.*?)</script>""", RegexOptions.Singleline).Groups[1].Value;
 
         Assert.Empty(JsonDocument.Parse(json).RootElement.GetProperty("features").EnumerateObject());
@@ -193,7 +193,7 @@ public class FeatureReportTests
 
     private static JsonElement Data(IReadOnlyList<ReportTest> tests)
     {
-        var html = HtmlWriter.Render(tests, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, "xunit");
+        var html = HtmlReport.Render(tests, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
         var json = Regex.Match(html, """<script id="mtp-data" type="application/json">(.*?)</script>""", RegexOptions.Singleline).Groups[1].Value;
         return JsonDocument.Parse(json).RootElement;
     }

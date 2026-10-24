@@ -1,0 +1,11 @@
+<Project>
+  <!--
+    Shared source for the HTML report: compiled into Davish.JustBdd.XunitV3 and Davish.JustBdd.Tool instead of shipping
+    a separate assembly, so neither package needs an extra dependency and project references load it without deps.json changes.
+  -->
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)*.cs" Link="Report/Shared/%(Filename)%(Extension)" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Templates/*.html;$(MSBuildThisFileDirectory)Templates/*.css;$(MSBuildThisFileDirectory)Templates/*.js"
+                      LogicalName="Davish.JustBdd.Report.Templates.%(Filename)%(Extension)" Link="Report/Shared/Templates/%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>
