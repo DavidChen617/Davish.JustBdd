@@ -60,6 +60,23 @@ public class ReportMergeTests
     }
 
     [Fact]
+    public async Task Merge_keeps_each_projects_own_feature_definitions()
+    {
+        var shop = new ReportFeature("Checkout", "Checkout", "Shop's checkout", [], []);
+        var billing = new ReportFeature("Checkout", "Checkout", "Billing's checkout", [], []);
+
+        var view = ReportView.FromCtrf([await JustBdd("Shop.Tests", "Shop.A", Start, Start, shop), await JustBdd("Billing.Tests", "Billing.B", Start, Start, billing)]);
+
+        var projects = view["projectFeatures"]!.AsObject();
+        Assert.Equal("Shop's checkout", (string)projects["Shop.Tests"]!["Checkout"]!["description"]!);
+        Assert.Equal("Billing's checkout", (string)projects["Billing.Tests"]!["Checkout"]!["description"]!);
+    }
+
+    [Fact]
+    public async Task Single_project_has_no_project_features()
+        => Assert.Null(ReportView.FromCtrf([await JustBdd("Shop.Tests", "Shop.A", Start, Start, new ReportFeature("Checkout", "Checkout", null, [], []))])["projectFeatures"]);
+
+    [Fact]
     public async Task Merge_spans_the_earliest_start_and_latest_stop()
     {
         var view = ReportView.FromCtrf([

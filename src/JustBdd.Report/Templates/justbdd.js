@@ -227,7 +227,7 @@
         var feature = project.features[f];
         frag.appendChild(buildGroupHeader(feature));
         if (state.collapsedGroups[feature.id]) return;
-        var panel = bddFeaturePanel(f);
+        var panel = bddFeaturePanel(f, p);
         if (panel) { panel.classList.add("bdd-subgroup"); frag.appendChild(panel); }
         bddAppendRows(frag, feature);
       });
@@ -295,8 +295,10 @@
   // Only http(s) URLs become links, so a test cannot inject javascript: URLs.
   function bddSafeUrl(url) { return /^https?:\/\//i.test(String(url || "")); }
 
-  function bddFeaturePanel(id) {
-    var f = bddFeatures()[id];
+  // project: under Project › Feature, prefer that project's own definition of the feature.
+  function bddFeaturePanel(id, project) {
+    var own = project && report.projectFeatures && report.projectFeatures[project];
+    var f = (own && own[id]) || bddFeatures()[id];
     if (!f) return null;
     var links = (f.links || []).filter(function (l) { return l && bddSafeUrl(l.url); });
     var metadata = f.metadata || [];

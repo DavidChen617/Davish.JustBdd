@@ -20,6 +20,7 @@ internal static class ReportView
 
         var rows = new JsonArray();
         var features = new JsonObject();
+        var projectFeatures = new JsonObject();
         var outcomes = new List<string>();
         var totalDuration = 0d;
         long? start = null, stop = null;
@@ -36,15 +37,20 @@ internal static class ReportView
             }
 
             if (results["extra"]?[Ctrf.ExtensionKey]?["features"] is JsonObject documentFeatures)
+            {
                 foreach (var feature in documentFeatures)
                     if (!features.ContainsKey(feature.Key)) features[feature.Key] = feature.Value?.DeepClone();
+                // Projects can define a feature of the same name differently; Project › Feature shows each project's own.
+                if (assembly is not null && !projectFeatures.ContainsKey(assembly)) projectFeatures[assembly] = documentFeatures.DeepClone();
+            }
 
             if (results["summary"]?["start"] is { } s) start = Math.Min(start ?? long.MaxValue, (long)Number(s));
             if (results["summary"]?["stop"] is { } e) stop = Math.Max(stop ?? long.MinValue, (long)Number(e));
         }
 
         var frameworks = included.Select(d => (string?)d.Root["results"]!["tool"]?["name"]).Where(n => n is not null).Distinct().ToArray();
-        return new JsonObject
+        var projects = included.Select(d => d.AssemblyName).Where(a => a is not null).Distinct().Count();
+        var view = new JsonObject
         {
             ["testApplication"] = HtmlWriter.Title,
             ["framework"] = frameworks.Length == 0 ? null : string.Join(", ", frameworks),
@@ -63,6 +69,8 @@ internal static class ReportView
                 ["totalDurationMs"] = totalDuration,
             },
         };
+        if (projects > 1) view["projectFeatures"] = projectFeatures;
+        return view;
     }
 
     private static JsonObject Row(JsonObject test, int rowKey, string? assembly)
