@@ -67,8 +67,8 @@ public class CartTests
             .Run();
     }
 
-    // A regular xUnit test does not appear in the Davish.JustBdd report; see the native report for its result.
+    // A regular xUnit test appears in the Davish.JustBdd report without scenarios; "BDD only" hides it.
     [Fact]
-    public void Plain_xunit_test_is_not_in_the_report()
+    public void Plain_xunit_test_is_listed_without_scenarios()
         => Assert.Equal(0m, new Cart().Total);
 }

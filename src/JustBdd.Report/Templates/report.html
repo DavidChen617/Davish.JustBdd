@@ -32,6 +32,8 @@
     <button type="button" class="filter-pill" data-filter="timedOut" aria-pressed="false">Timed out <span class="count" id="count-timedOut">0</span></button>
     <button type="button" class="filter-pill" data-filter="skipped" aria-pressed="false">Skipped <span class="count" id="count-skipped">0</span></button>
     <button type="button" class="filter-pill" data-filter="passed" aria-pressed="false">Passed <span class="count" id="count-passed">0</span></button>
+    <!-- Davish.JustBdd: shown only when the report mixes tests with and without scenarios -->
+    <button type="button" class="filter-pill" id="bdd-only" aria-pressed="false" title="Show only tests that ran scenarios" hidden>BDD only <span class="count" id="count-bdd">0</span></button>
     <label for="group-by" style="font-size:12px;color:var(--fg-muted);margin-left:8px">Group by:</label>
     <select id="group-by" title="Group tests" aria-label="Group tests"></select>
   </div>

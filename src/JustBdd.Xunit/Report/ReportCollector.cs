@@ -91,7 +91,7 @@ internal sealed class ReportCollector
         }
     }
 
-    /// <summary>Returns tests with scenarios. Use the native report for ordinary tests.</summary>
+    /// <summary>Returns tests with scenarios only.</summary>
     public IReadOnlyList<ReportTest> Build()
     {
         lock (_gate) return _order.Select(Create).ToArray();

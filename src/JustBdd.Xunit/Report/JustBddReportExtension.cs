@@ -131,7 +131,7 @@ internal sealed class JustBddReporter(ICommandLineOptions options, IConfiguratio
         if (options.IsOptionSet(XunitReportOptions.Html))
         {
             var path = Path.Combine(directory, FileName(XunitReportOptions.HtmlFileName, assemblyName, ".html"));
-            File.WriteAllText(path, HtmlReport.Render(Collector.Build(), Collector.StartTime, stop, assemblyName, TargetFramework(testAssembly)));
+            File.WriteAllText(path, HtmlReport.Render(Collector.BuildAll(), Collector.StartTime, stop, assemblyName, TargetFramework(testAssembly)));
             await PublishAsync(context, path, "Davish.JustBdd HTML report", "Scenarios of the tests in this run");
         }
 

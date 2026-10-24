@@ -57,6 +57,17 @@ public sealed class ReportOptionTests : IDisposable
         Assert.Contains("id=\"mtp-data\"", File.ReadAllText(Path.Combine(_directory, Files()[0])));
     }
 
+    [Fact]
+    public async Task Html_report_lists_tests_without_scenarios()
+    {
+        var reporter = Reporter(("report-xunit-html", []));
+
+        await Finish(reporter);
+
+        // The HTML data island escapes quotes inside strings, but test names are plain.
+        Assert.Contains("\"displayName\":\"T.Plain\"", File.ReadAllText(Path.Combine(_directory, Files()[0])));
+    }
+
     [Theory]
     [InlineData("report-xunit-ctrf", "report-xunit-ctrf-filename", "x.json", "x.justbdd.ctrf.json")]
     [InlineData("report-xunit-html", "report-xunit-html-filename", "x.html", "x.justbdd.html")]

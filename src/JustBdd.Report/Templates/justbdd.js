@@ -169,6 +169,99 @@
 
   // ---- Features: group tests by feature and show the feature's details
 
+  // A merged report records each test's assembly; the report calls it the project.
+  function bddProjects() {
+    var seen = Object.create(null), projects = [];
+    for (var i = 0; i < tests.length; i++) {
+      var p = tests[i].assembly;
+      if (p && !seen[p]) { seen[p] = true; projects.push(p); }
+    }
+    return projects;
+  }
+
+  function bddProjectKey(t) { return t.assembly || "(no project)"; }
+
+  function bddBucket(id, label, level) {
+    return { id: id, label: label, level: level, tests: [], counts: { passed: 0, failed: 0, skipped: 0, timedOut: 0, errored: 0 } };
+  }
+
+  function bddAdd(bucket, t) {
+    bucket.tests.push(t);
+    if (bucket.counts[t.outcome] != null) bucket.counts[t.outcome]++;
+  }
+
+  // "Project > Feature": a group per project, then a group per feature inside it. Ids are prefixed with the project,
+  // so collapsing a feature in one project leaves the same feature in another project open.
+  function bddRenderProjectFeatures(rowsContainer, pager, filtered) {
+    var projects = Object.create(null), order = [];
+    for (var i = 0; i < filtered.length; i++) {
+      var t = filtered[i], p = bddProjectKey(t), f = bddFeatureKey(t);
+      var project = projects[p];
+      if (!project) {
+        project = projects[p] = bddBucket("project:" + p, p, 0);
+        project.features = Object.create(null);
+        project.featureOrder = [];
+        order.push(p);
+      }
+      bddAdd(project, t);
+      if (!project.features[f]) {
+        project.features[f] = bddBucket("project:" + p + "\u0000" + f, bddFeatureLabel(f), 1);
+        project.featureOrder.push(f);
+      }
+      bddAdd(project.features[f], t);
+    }
+    order.sort(function (a, b) { var x = a.toLowerCase(), y = b.toLowerCase(); return x < y ? -1 : x > y ? 1 : 0; });
+
+    pager.hidden = true;
+    var frag = document.createDocumentFragment();
+    order.forEach(function (p) {
+      var project = projects[p];
+      frag.appendChild(buildGroupHeader(project));
+      if (state.collapsedGroups[project.id]) return;
+      // A project without features lists its tests directly instead of under a lone "(no feature)" group.
+      if (project.featureOrder.length === 1 && project.featureOrder[0] === BDD_NO_FEATURE) {
+        bddAppendRows(frag, project);
+        return;
+      }
+      project.featureOrder.sort(bddCompareFeatures).forEach(function (f) {
+        var feature = project.features[f];
+        frag.appendChild(buildGroupHeader(feature));
+        if (state.collapsedGroups[feature.id]) return;
+        var panel = bddFeaturePanel(f);
+        if (panel) { panel.classList.add("bdd-subgroup"); frag.appendChild(panel); }
+        bddAppendRows(frag, feature);
+      });
+    });
+    rowsContainer.appendChild(frag);
+  }
+
+  // Same per-group cap as the template's single-level grouping.
+  function bddAppendRows(frag, bucket) {
+    var limit = Math.min(bucket.tests.length, state.shownPerGroup[bucket.id] || state.pageSize);
+    for (var j = 0; j < limit; j++) frag.appendChild(buildRow(bucket.tests[j]));
+    if (bucket.tests.length > limit) frag.appendChild(buildShowMore(bucket, limit));
+  }
+
+  function bddHasScenarios(t) { return !!(t.scenarios && t.scenarios.length); }
+
+  // "BDD only" stays hidden unless the report has tests both with and without scenarios.
+  function bddInitScenarioFilter() {
+    var button = document.getElementById("bdd-only");
+    var count = 0;
+    for (var i = 0; i < tests.length; i++) if (bddHasScenarios(tests[i])) count++;
+    if (count === 0 || count === tests.length) { state.bddOnly = false; return; }
+    document.getElementById("count-bdd").textContent = count;
+    button.hidden = false;
+    button.setAttribute("aria-pressed", state.bddOnly ? "true" : "false");
+    button.addEventListener("click", function () {
+      state.bddOnly = !state.bddOnly;
+      state.page = 0;
+      button.setAttribute("aria-pressed", state.bddOnly ? "true" : "false");
+      persist();
+      renderRows();
+    });
+  }
+
   var BDD_NO_FEATURE = "__nofeature__";
 
   function bddFeatures() { return report.features || {}; }
@@ -238,7 +331,8 @@
   // The row badge names the feature, unless the rows are already grouped under it.
   function bddFeatureBadge(t) {
     var f = t.featureId ? bddFeatures()[t.featureId] : null;
-    if (!f || state.groupBy === "feature") return null;
+    // The group header already names the feature.
+    if (!f || state.groupBy === "feature" || state.groupBy === "project-feature") return null;
     var badge = bddEl("span", "bdd-feature-badge", "\u25c6 " + f.name);
     badge.title = "Feature: " + f.name;
     return badge;

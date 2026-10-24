@@ -21,7 +21,8 @@
     pageSize: 200,
     expanded: Object.create(null),
     collapsedGroups: Object.create(null),
-    shownPerGroup: Object.create(null)
+    shownPerGroup: Object.create(null),
+    bddOnly: false   // Davish.JustBdd: show only tests with scenarios
   };
 
   // Scope the storage key to this specific report file so that opening another
@@ -42,10 +43,13 @@
     if (saved.search)   state.search = saved.search;
     if (saved.groupBy)  { state.groupBy = saved.groupBy; bddGroupByLoaded = true; }   // Davish.JustBdd: flag
     if (typeof saved.pageSize === "number") state.pageSize = saved.pageSize;
+    if (saved.bddOnly)  state.bddOnly = true;   // Davish.JustBdd
   } catch (e) { /* ignored */ }
 
   // Davish.JustBdd: group by feature by default when the report has features
   if (!bddGroupByLoaded && bddHasFeatures()) state.groupBy = "feature";
+  // Davish.JustBdd: a merged report of several projects groups by project, then feature
+  if (!bddGroupByLoaded && bddProjects().length > 1) state.groupBy = "project-feature";
 
   // Default filter: when the run has any non-passing outcome we open scoped to the
   // most informative failing category present. If there are no real failures (only
@@ -66,7 +70,8 @@
     try {
       sessionStorage.setItem(storageKey, JSON.stringify({
         filter: state.filter, sort: state.sort, sortDir: state.sortDir,
-        search: state.search, groupBy: state.groupBy, pageSize: state.pageSize
+        search: state.search, groupBy: state.groupBy, pageSize: state.pageSize,
+        bddOnly: state.bddOnly   // Davish.JustBdd
       }));
     } catch (e) { /* ignored */ }
   }
@@ -115,6 +120,7 @@
     if (state.groupBy === "none")  return ["__all__"];
     if (state.groupBy === "class") return [t.className || "(no class)"];
     if (state.groupBy === "feature") return [bddFeatureKey(t)];   // Davish.JustBdd
+    if (state.groupBy === "project") return [bddProjectKey(t)];   // Davish.JustBdd
     if (state.groupBy === "duration") {
       var b = durationBucket(t.durationMs);
       return [b.id];
@@ -161,6 +167,9 @@
       { v: "duration", l: "Duration" }
     ];
     if (bddHasFeatures()) options.splice(1, 0, { v: "feature", l: "Feature" });   // Davish.JustBdd
+    // Davish.JustBdd: projects of a merged report
+    if (bddProjects().length > 0) options.splice(bddHasFeatures() ? 2 : 1, 0, { v: "project", l: "Project" });
+    if (bddProjects().length > 1) options.splice(1, 0, { v: "project-feature", l: "Project \u203a Feature" });
     traitKeys().forEach(function (k) {
       options.push({ v: "trait:" + k, l: k, g: "Traits" });   // Davish.JustBdd: traits in their own group
     });
@@ -267,6 +276,7 @@
     for (var i = 0; i < tests.length; i++) {
       var t = tests[i];
       if (filter !== "all" && t.outcome !== filter) continue;
+      if (state.bddOnly && !bddHasScenarios(t)) continue;   // Davish.JustBdd
       if (q) {
         var hay =
           (t.displayName || "") + "\n" +
@@ -324,6 +334,8 @@
 
     if (state.groupBy === "none") {
       renderFlat(rowsContainer, pager, filtered);
+    } else if (state.groupBy === "project-feature") {
+      bddRenderProjectFeatures(rowsContainer, pager, filtered);   // Davish.JustBdd: two levels
     } else {
       renderGrouped(rowsContainer, pager, filtered);
     }
@@ -436,7 +448,7 @@
 
   function buildGroupHeader(bucket) {
     var hdr = document.createElement("div");
-    hdr.className = "group-header" + (state.collapsedGroups[bucket.id] ? " collapsed" : "");
+    hdr.className = "group-header" + (bucket.level ? " bdd-subgroup" : "") + (state.collapsedGroups[bucket.id] ? " collapsed" : "");   // Davish.JustBdd: level
     hdr.setAttribute("role", "button");
     hdr.setAttribute("tabindex", "0");
     hdr.setAttribute("aria-expanded", state.collapsedGroups[bucket.id] ? "false" : "true");
@@ -448,7 +460,7 @@
 
     var title = document.createElement("div");
     title.className = "title";
-    title.textContent = groupLabel(bucket.id) || bucket.id;
+    title.textContent = bucket.label || groupLabel(bucket.id) || bucket.id;   // Davish.JustBdd: label
     hdr.appendChild(title);
 
     var counts = document.createElement("div");
@@ -759,7 +771,7 @@
   }
 
   function bindToolbar() {
-    document.querySelectorAll(".filter-pill").forEach(function (el) {
+    document.querySelectorAll(".filter-pill[data-filter]").forEach(function (el) {   // Davish.JustBdd: [data-filter] skips #bdd-only
       el.addEventListener("click", function () {
         state.filter = el.getAttribute("data-filter");
         state.page = 0;
@@ -809,7 +821,7 @@
   }
 
   function updateFilterButtons() {
-    document.querySelectorAll(".filter-pill").forEach(function (el) {
+    document.querySelectorAll(".filter-pill[data-filter]").forEach(function (el) {   // Davish.JustBdd: [data-filter] skips #bdd-only
       var active = el.getAttribute("data-filter") === state.filter;
       el.setAttribute("aria-pressed", active ? "true" : "false");
     });
@@ -847,6 +859,7 @@
   renderHeader();
   buildGroupSelector();
   bindToolbar();
+  bddInitScenarioFilter();   // Davish.JustBdd
   updateFilterButtons();
   updateSortHeaders();
   renderRows();
