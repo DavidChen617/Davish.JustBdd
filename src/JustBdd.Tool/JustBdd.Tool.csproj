@@ -11,7 +11,7 @@
     <AssemblyName>Davish.JustBdd.Tool</AssemblyName>
     <RootNamespace>Davish.JustBdd.Tool</RootNamespace>
     <!-- Keep in step with Davish.JustBdd and Davish.JustBdd.XunitV3; the release workflow checks all three against the tag. -->
-    <Version>0.1.0-preview.1</Version>
+    <Version>0.2.0</Version>
     <Description>Renders the CTRF files of several test projects (dotnet test --report-xunit-ctrf) into one Davish.JustBdd HTML report: justbdd html TestResults.</Description>
   </PropertyGroup>
 

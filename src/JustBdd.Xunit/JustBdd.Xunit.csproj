@@ -6,7 +6,7 @@
     <AssemblyName>Davish.JustBdd.XunitV3</AssemblyName>
     <RootNamespace>Davish.JustBdd</RootNamespace>
     <!-- Keep in step with Davish.JustBdd and Davish.JustBdd.Tool; the release workflow checks all three against the tag. -->
-    <Version>0.1.0-preview.1</Version>
+    <Version>0.2.0</Version>
     <Description>xUnit v3 integration for Davish.JustBdd: xUnit assertions that chain after Then, and single-file HTML and CTRF reports written alongside xUnit's (--report-xunit-html, --report-xunit-ctrf). Requires xunit.v3 4.x.</Description>
     <NoWarn>$(NoWarn);TPEXP</NoWarn>
     <IsTestProject>false</IsTestProject>
