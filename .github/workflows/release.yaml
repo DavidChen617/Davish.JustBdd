@@ -25,11 +25,11 @@ jobs:
           dotnet-version: 11.0.x
           dotnet-quality: preview
 
-      # Versions are edited by hand in each csproj; the tag must match both.
+      # Versions are edited by hand in each packable csproj; the tag must match all of them.
       - name: Check versions
         run: |
           tag="${GITHUB_REF_NAME#v}"
-          for proj in src/JustBdd/JustBdd.csproj src/JustBdd.Xunit/JustBdd.Xunit.csproj; do
+          for proj in src/JustBdd/JustBdd.csproj src/JustBdd.Xunit/JustBdd.Xunit.csproj src/JustBdd.Tool/JustBdd.Tool.csproj; do
             version=$(dotnet msbuild "$proj" -getProperty:Version)
             if [ "$version" != "$tag" ]; then
               echo "::error file=$proj::Version is $version, but the tag is $GITHUB_REF_NAME."
