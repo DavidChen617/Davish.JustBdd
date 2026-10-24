@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!-- .NET 10 is the current LTS; RollForward lets machines with only a newer runtime run the tool. -->
+    <TargetFramework>net10.0</TargetFramework>
+    <RollForward>Major</RollForward>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>justbdd</ToolCommandName>
+    <PackageId>Davish.JustBdd.Tool</PackageId>
+    <AssemblyName>Davish.JustBdd.Tool</AssemblyName>
+    <RootNamespace>Davish.JustBdd.Tool</RootNamespace>
+    <!-- Keep in step with Davish.JustBdd and Davish.JustBdd.XunitV3; the release workflow checks all three against the tag. -->
+    <Version>0.1.0-preview.1</Version>
+    <Description>Renders the CTRF files of several test projects (dotnet test --report-xunit-ctrf) into one Davish.JustBdd HTML report: justbdd html TestResults.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.CommandLine" Version="2.0.13" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="../JustBdd.Xunit/THIRD-PARTY-NOTICES.md" Pack="true" PackagePath="" Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Davish.JustBdd.Tool.Tests" />
+  </ItemGroup>
+
+  <Import Project="../JustBdd.Report/JustBdd.Report.props" />
+
+</Project>

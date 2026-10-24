@@ -2,11 +2,13 @@
   <Folder Name="/src/">
     <Project Path="src/JustBdd/JustBdd.csproj" />
     <Project Path="src/JustBdd.Analyzers/JustBdd.Analyzers.csproj" />
+    <Project Path="src/JustBdd.Tool/JustBdd.Tool.csproj" />
     <Project Path="src/JustBdd.Xunit/JustBdd.Xunit.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/JustBdd.Analyzers.Tests/JustBdd.Analyzers.Tests.csproj" />
     <Project Path="tests/JustBdd.Tests/JustBdd.Tests.csproj" />
+    <Project Path="tests/JustBdd.Tool.Tests/JustBdd.Tool.Tests.csproj" />
     <Project Path="tests/JustBdd.Xunit.Tests/JustBdd.Xunit.Tests.csproj" />
   </Folder>
   <Folder Name="/samples/">

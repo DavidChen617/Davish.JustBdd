@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>Davish.JustBdd.Tool.Tests</AssemblyName>
+    <RootNamespace>Davish.JustBdd.Tool.Tests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/JustBdd.Tool/JustBdd.Tool.csproj" />
+  </ItemGroup>
+</Project>
