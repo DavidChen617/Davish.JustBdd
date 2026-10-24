@@ -34,6 +34,7 @@ public void Adding_products_updates_the_total()
 - xUnit assertions chain directly after `Then`.
 - Expected exceptions, events, and `PropertyChanged` have ready-made checks.
 - Features carry descriptions, links, and metadata, and the report groups tests by feature.
+- Results of several test projects merge into one report.
 - A Roslyn analyzer warns when a scenario is never run.
 
 ### Packages
@@ -41,9 +42,10 @@ public void Adding_products_updates_the_total()
 | Package | Contents |
 | --- | --- |
 | `Davish.JustBdd` | Core: `Scenario`, the Given / When / Then stages, the result model, features, and the JBDD001 analyzer |
-| `Davish.JustBdd.XunitV3` | xUnit assertions, the HTML report, the Microsoft.Testing.Platform hook, and the xunit.v3 version check. Depends on `Davish.JustBdd` |
+| `Davish.JustBdd.XunitV3` | xUnit assertions, the HTML and CTRF reports, the Microsoft.Testing.Platform hook, and the xunit.v3 version check. Depends on `Davish.JustBdd` |
+| `Davish.JustBdd.Tool` | The `justbdd` dotnet tool, which merges the CTRF files of several test projects into one HTML report |
 
-Both packages target `netstandard2.1`. An xUnit test project only needs `Davish.JustBdd.XunitV3`.
+The first two packages target `netstandard2.1`, and an xUnit test project only needs `Davish.JustBdd.XunitV3`. `Davish.JustBdd.Tool` needs the .NET 10 runtime or later.
 
 ## Getting started
 
@@ -61,9 +63,6 @@ Both packages target `netstandard2.1`. An xUnit test project only needs `Davish.
 dotnet add package Davish.JustBdd.XunitV3
 ```
 
-> [!NOTE]
-> The packages are not on NuGet yet. For now, reference `src/JustBdd.Xunit/JustBdd.Xunit.csproj` directly, or pack it locally with `dotnet pack`.
-
 To run tests through Microsoft.Testing.Platform with `dotnet test`, add this to `global.json`:
 
 ```json
@@ -79,7 +78,7 @@ To run tests through Microsoft.Testing.Platform with `dotnet test`, add this to 
 `samples/ShoppingCart.Domain.Tests` uses a shopping cart to show every pattern in this README:
 
 ```shell
-dotnet test --project samples/ShoppingCart.Domain.Tests --report-justbdd-html
+dotnet test --project samples/ShoppingCart.Domain.Tests --report-xunit-html
 ```
 
 ## Writing scenarios
@@ -332,23 +331,63 @@ xUnit traits (`[Trait("Category", "Smoke")]`) appear as tags on each test row an
 
 ## HTML report
 
+### One project
+
 ```shell
-dotnet test --report-justbdd-html
+dotnet test --report-xunit-html
 ```
 
-| Option | Description |
+Davish.JustBdd registers no command-line options of its own; it writes its reports next to xUnit's. A solution can therefore pass the same options at the solution level even when some test projects don't reference Davish.JustBdd.
+
+| Command | Davish.JustBdd writes |
 | --- | --- |
-| `--report-justbdd-html` | Writes the report |
-| `--report-justbdd-html-filename <name>.html` | Changes the file name (default `justbdd.html`); must end with `.html` |
-| `--results-directory <dir>` | Microsoft.Testing.Platform's results folder (default `TestResults/` under the current directory) |
+| `--report-xunit-html` | `justbdd-<project>.html` |
+| `--report-xunit-ctrf` | `justbdd-<project>.ctrf.json` ([CTRF](#ctrf)) |
+| With `--report-xunit-html-filename x.html` | `x.justbdd.html` |
+| With `--report-xunit-ctrf-filename x.json` | `x.justbdd.ctrf.json` |
 
-The report is a single HTML file that opens offline. In it you can:
+- Files go to Microsoft.Testing.Platform's results folder, `TestResults/` under the current directory by default; change it with `--results-directory <dir>`.
+- Each project gets its own file name, so projects don't overwrite each other. The files are listed under "In process file artifacts produced" in the `dotnet test` output.
 
-- Group by feature, class, duration, or trait, and filter by outcome.
+> [!NOTE]
+> `--report-justbdd-html` and `--report-justbdd-html-filename` from 0.1.0-preview.1 have been removed; use the xUnit options above.
+
+### Several projects in one report
+
+Each test project runs on its own and writes its own files. To get one report, have every project write CTRF, then merge the files with the `justbdd` dotnet tool:
+
+```shell
+dotnet new tool-manifest            # if there is no tool manifest (dotnet-tools.json) yet
+dotnet tool install Davish.JustBdd.Tool
+
+dotnet test --report-xunit-ctrf
+dotnet justbdd html                 # writes TestResults/justbdd.html
+```
+
+- Without inputs, the tool reads `TestResults`. Inputs can be files, folders, or paths with file name wildcards, such as `dotnet justbdd html TestResults/justbdd-*.ctrf.json`; a folder contributes its `*.ctrf.json` and `*.ctrf` files, without subfolders.
+- The report goes to `justbdd.html` in the first input's folder; `-o <file>` writes it elsewhere.
+- With `--report-xunit-ctrf`, xUnit also writes its own CTRF (`.ctrf`). When a project has both, the Davish.JustBdd one is used; a project without Davish.JustBdd contributes xUnit's, so its tests still appear (without scenarios).
+- If any file isn't valid CTRF, the tool reports the file and the reason, exits with code 1, and writes no report.
+
+### What the report shows
+
+The report is a single HTML file that opens offline.
+
+- Every test is listed. When the report has tests both with and without scenarios, a "BDD only" toggle shows just the ones with scenarios.
+- Filter by outcome; group by feature, project, class, duration, or trait. A report that merges two or more projects groups by "Project › Feature" by default, and a project without features lists its tests directly.
 - Expand a scenario to see each step's status, duration, source code, and exception; nested scenarios sit under their step.
+- Failed and skipped tests show the error message (or skip reason), stack trace, and output. Output covers what tests write to `ITestOutputHelper`; `Console` output doesn't belong to a single test and only appears in the `dotnet test` console output.
 - Search test names, classes, error messages, scenario and step text, and feature names, descriptions, link titles, metadata, and traits.
 
-Only tests that run a scenario are listed; for other tests, use the native reports. Test outcomes come from Microsoft.Testing.Platform.
+When projects define a feature of the same name differently, "Project › Feature" shows each project's own description; grouping by feature alone merges them and uses the first one read.
+
+Test outcomes come from Microsoft.Testing.Platform.
+
+### CTRF
+
+`justbdd-<project>.ctrf.json` from `--report-xunit-ctrf` follows [CTRF](https://github.com/ctrf-io/ctrf) 0.2.0, so other CTRF tools can read it. Davish.JustBdd data such as scenarios and features lives under `extra["davish.justbdd"]`; CTRF's `steps` also list the flattened step names and statuses.
+
+### Collecting results yourself
 
 To collect results yourself, implement `IScenarioResultSink` and register it with `ScenarioResults.AddSink`; dispose the returned object to unregister. Each top-level scenario is reported once, passed or failed; nested scenarios appear in their step's `Children`.
 
@@ -393,4 +432,4 @@ Projects that target `net9.0` or later default to C# 13 or later and need neithe
 
 ## Third-party notices
 
-The HTML report template is adapted from Microsoft.Testing.Extensions.HtmlReport 2.4.0 (MIT). See [THIRD-PARTY-NOTICES.md](src/JustBdd.Xunit/THIRD-PARTY-NOTICES.md).
+The HTML report template is adapted from Microsoft.Testing.Extensions.HtmlReport 2.4.0 (MIT) and ships in `Davish.JustBdd.XunitV3` and `Davish.JustBdd.Tool`. See [THIRD-PARTY-NOTICES.md](src/JustBdd.Xunit/THIRD-PARTY-NOTICES.md).

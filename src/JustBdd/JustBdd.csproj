@@ -5,7 +5,7 @@
     <PackageId>Davish.JustBdd</PackageId>
     <AssemblyName>Davish.JustBdd</AssemblyName>
     <RootNamespace>Davish.JustBdd</RootNamespace>
-    <!-- Keep in step with Davish.JustBdd.XunitV3; the release workflow checks both against the tag. -->
+    <!-- Keep in step with Davish.JustBdd.XunitV3 and Davish.JustBdd.Tool; the release workflow checks all three against the tag. -->
     <Version>0.1.0-preview.1</Version>
     <Description>Given / When / Then scenarios as plain C# lambdas: a lazy step chain that records each step's description, source code, and result, with an analyzer that flags scenarios that never run.</Description>
   </PropertyGroup>
