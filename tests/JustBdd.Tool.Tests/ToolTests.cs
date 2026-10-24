@@ -28,7 +28,8 @@ public sealed class ToolTests : IDisposable
 
     private string Write(string relativePath, string content)
     {
-        var path = Path.Combine(_root, relativePath);
+        // GetFullPath normalizes separators, so on Windows "results/x" matches the paths the tool reports.
+        var path = Path.GetFullPath(Path.Combine(_root, relativePath));
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         File.WriteAllText(path, content);
         return path;
